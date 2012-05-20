@@ -4,13 +4,14 @@ using System.Collections;
 
 public class DemoControl : MonoBehaviour
 {
+	/*
 	public Texture2D pauseIcon, menuBackground, resumeButton, restartButton, fullscreenButton, muteButton, quitButton;
 	
 	private const float cornerTextureSize = 48.0f;
 	private const float menuWidth = 200.0f, menuHeight = 241.0f, menuHeaderHeight = 26.0f, buttonWidth = 175.0f, buttonHeight = 30.0f;
 	
 	private bool fullScreenAvailable = false, quitEnabled = true, directKeyQuit = true;
-	
+	*/
 	
 	public static void Restart ()
 	{
@@ -22,8 +23,7 @@ public class DemoControl : MonoBehaviour
 		Time.timeScale = 1.0f;
 		Application.LoadLevel (0);
 	}
-	
-	
+	/*
 	public bool AudioEnabled
 	{
 		get
@@ -212,4 +212,5 @@ public class DemoControl : MonoBehaviour
 		
 		return wasPressed;
 	}
+	*/
 }
