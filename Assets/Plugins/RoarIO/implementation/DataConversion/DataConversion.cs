@@ -4,6 +4,22 @@ using UnityEngine;
 
 namespace Roar.implementation.DataConversion
 {
+	/**
+	 * The attribute conversion code in this namespace uses Native.Extract
+	 * to convert string representations of booleans to native bools as
+	 * it's easier to work with booleans than string representations of booleans.
+	 **/
+	public class Native {
+		public static object Extract(string v) {
+			if(v == "true") {
+				return true;
+			} else if (v == "false") {
+				return false;
+			} else {
+				return v;
+			}
+		}
+	}
 
 	public interface IXmlToHashtable
 	{
@@ -25,7 +41,7 @@ namespace Roar.implementation.DataConversion
 			Hashtable h = new Hashtable();
 			foreach( KeyValuePair<string,string> kv in n.Attributes )
 			{
-				h[kv.Key] = kv.Value;
+				h[kv.Key] = Native.Extract(kv.Value);
 			}
 			return h;
 		}
@@ -138,7 +154,7 @@ namespace Roar.implementation.DataConversion
 			Hashtable retval = new Hashtable();
 			foreach( KeyValuePair<string,string> kv in n.Attributes )
 			{
-				retval[kv.Key] = kv.Value;
+				retval[kv.Key] = Native.Extract(kv.Value);
 			}
 			
 			foreach( IXMLNode nn in n.Children )
@@ -185,7 +201,7 @@ namespace Roar.implementation.DataConversion
 				}
 				else
 				{
-					retval[kv.Key] = kv.Value;
+					retval[kv.Key] = Native.Extract(kv.Value);
 				}
 			}
 			
@@ -233,7 +249,7 @@ namespace Roar.implementation.DataConversion
 			Hashtable retval = new Hashtable();
 			foreach( KeyValuePair<string,string> kv in n.Attributes )
 			{
-				retval[kv.Key] = kv.Value;
+				retval[kv.Key] = Native.Extract(kv.Value);
 			}
 			return retval;
 		}

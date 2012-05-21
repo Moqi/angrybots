@@ -17,7 +17,8 @@ private var fullScreenAvailable:boolean = false;
 private var quitEnabled:boolean = true;
 private var directKeyQuit:boolean = true;
 
-//IXMLNodeFactory.instance = new SystemXMLNodeFactory();		
+// TODO: SystemXMLNodeFactory is broken
+// IXMLNodeFactory.instance = new SystemXMLNodeFactory();		
 IXMLNodeFactory.instance = new XMLNodeFactory();
 
 /**
@@ -317,7 +318,7 @@ function renderShop() {
 	// inventory left column start
 	GUILayout.BeginVertical();
 	
-		GUILayout.Box("Inventory");
+		GUILayout.Box("Goods for Purchase");
 
 		var shopItems = shop.list() as ArrayList;
 		
@@ -356,9 +357,12 @@ function renderShop() {
 		if(selectedItem == null) {
 			shopSelectId = null;
 		} else {
-			GUILayout.Box("Item Profile");
-			GUILayout.Label(selectedItem["label"] as String);
-			GUILayout.Label(selectedItem["ikey"] as String);
+			GUILayout.Box("Goods Profile");
+			
+			var costs = (selectedItem['costs'] as ArrayList)[0] as Hashtable;
+			GUILayout.Label( selectedItem['label'] as String );
+			GUILayout.Label( costs['value'] + ' ' + costs['ikey'] );
+			
 			GUILayout.Box("Actions");
 	
 			var canBuy = true;
@@ -396,7 +400,7 @@ function renderInventory() {
 		var itemIds:ArrayList = new ArrayList();  
 		for(var i=0;i<inventoryItems.Count;i++) {
 			var item:Hashtable = inventoryItems[i];
-			if(!item["equipped"] || item["equipped"] == "false") {
+			if(item["equipped"] != true) {
 				labels.Add(item["label"]);
 				itemIds.Add(item["id"]);
 			}
@@ -421,7 +425,7 @@ function renderInventory() {
 		itemIds.Clear();
 		for(i=0;i<inventoryItems.Count;i++) {
 			item = inventoryItems[i];
-			if(item["equipped"] && item["equipped"] != "false") {
+			if(item["equipped"] == true) {
 				labels.Add(item["label"]);
 				itemIds.Add(item["id"]);
 			}
@@ -458,7 +462,7 @@ function renderInventory() {
 			GUILayout.Label(selectedItem["equipped"] as String);
 			GUILayout.Box("Actions");
 	
-			if( selectedItem["equipped"] == "true" )
+			if( selectedItem["equipped"] == true )
 	      	{
 		        if(GUILayout.Button("Unequip"))
 		        {
@@ -472,7 +476,7 @@ function renderInventory() {
 		            inventory.activate( item['id'] as String, null);
 		        }
 	      	}
-	      	if( selectedItem['sellable'] == "true" )
+	      	if( selectedItem['sellable'] == true )
 	      	{
 	        	if(GUILayout.Button("Sell"))
 	        	{
@@ -590,11 +594,12 @@ function onGoodSold(goodInfo:RoarIOManager.GoodInfo) {
 RoarIOManager.inventoryReadyEvent += onInventoryReady;
 function onInventoryReady() {
 	// make sure the equipment manager knows what the user is equipped with
+	// when the game starts
 	gameObject.GetComponent(EquipmentManager).Reset();
 	var inventoryItems = inventory.list() as ArrayList;
 	for(var i=0;i<inventoryItems.Count;i++) {
 		var item:Hashtable = inventoryItems[i];
-		if(item["equipped"] && item["equipped"] != "false") {
+		if(item["equipped"] && item["equipped"] != false) {
 			gameObject.GetComponent(EquipmentManager).Equip(item["ikey"]);
 		}
 	}

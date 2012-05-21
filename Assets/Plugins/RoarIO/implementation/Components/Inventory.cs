@@ -133,7 +133,7 @@ public class Inventory : IInventory
     }
 
     // Ensure item is sellable first
-    if ( item["sellable"] as string !="true")
+    if ( (bool)item["sellable"] != true)
     {
       var error = item["ikey"]+": Good is not sellable";
       if (roar_internal_.isDebug()) Debug.Log("[roar] -- " + error );
@@ -187,7 +187,7 @@ public class Inventory : IInventory
     // GH#152: Ensure item is consumable first
 	Debug.Log ( Roar.Json.ObjectToJSON(item) );
 		
-    if ( item["consumable"] as string !="true")
+    if ( (bool)item["consumable"] != true)
     {
       var error = item["ikey"]+": Good is not consumable";
       if (roar_internal_.isDebug()) Debug.Log( "[roar] -- "+error );
