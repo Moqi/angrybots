@@ -111,9 +111,11 @@ public class XMLNode : IXMLNode
 	{
 		XMLNodeList nl = GetObject(path) as XMLNodeList;
 		List<IXMLNode> retval = new List<IXMLNode>();
-		foreach( XMLNode n in nl )
-		{
-			retval.Add(n);
+		if(nl != null) {
+			foreach( XMLNode n in nl )
+			{
+				retval.Add(n);
+			}
 		}
 		return retval;
 	}
