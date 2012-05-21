@@ -1,7 +1,5 @@
 #pragma strict
 
-import UnityEngine;
-
 private var confirmMessage:String;
 private var callback : Function;
 
@@ -40,7 +38,7 @@ function OnGUI() {
 	}
 }
 
-function Show(msg, cb) {
+function Show(msg:String, cb:Function) {
 	confirmMessage = msg;
 	callback = cb;
 }

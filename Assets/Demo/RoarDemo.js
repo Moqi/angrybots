@@ -1,7 +1,5 @@
 #pragma strict
 
-import System.Collections;
-import UnityEngine;
 import Roar.Components;
  
 /**
@@ -59,14 +57,14 @@ private var userToolbarUIStates : UIState[] = [UIState.Main, UIState.Inventory, 
 
 private var inventorySelectIndex = -1;
 private var equippedSelectIndex = -1;
-private var selectedItemId;
+private var selectedItemId : String;
 private var inventoryScroll : Vector2;
 private var equippedScroll : Vector2;
 
 
 private var shopSelectIndex = -1;
 private var shopScroll : Vector2;
-private var shopSelectId;
+private var shopSelectId : String;
 
 private var inMenu = true;
 
@@ -327,18 +325,18 @@ function renderShop() {
 		var labels:ArrayList = new ArrayList();
 		var itemIds:ArrayList = new ArrayList();  
 		for(var i=0;i<shopItems.Count;i++) {
-			var item:Hashtable = shopItems[i];
+			var item:Hashtable = shopItems[i] as Hashtable;
 			labels.Add(item["label"]);
 			itemIds.Add(item["shop_ikey"]);
 		}
 		if(labels.Count > 0) {
-			var shopItemLabels:String[] = labels.ToArray(typeof(String));
+			var shopItemLabels:String[] = labels.ToArray(typeof(String)) as String[];
 			shopSelectIndex = GUILayout.SelectionGrid(shopSelectIndex, shopItemLabels, 3);
 			
 			if(shopSelectIndex == -1) {
 				shopSelectId = null;
 			} else {
-				shopSelectId = itemIds[shopSelectIndex];
+				shopSelectId = itemIds[shopSelectIndex] as String;
 			}
 		} else {
 			GUILayout.Label("no goods available at this time");
@@ -353,7 +351,7 @@ function renderShop() {
 	GUILayout.BeginVertical(GUILayout.MinWidth(300));
 	
 	if(shopSelectId) {
-		var selectedItem:Hashtable = shop.getShopItem(shopSelectId);
+		var selectedItem:Hashtable = shop.getShopItem(shopSelectId) as Hashtable;
 		if(selectedItem == null) {
 			shopSelectId = null;
 		} else {
@@ -399,19 +397,18 @@ function renderInventory() {
 		var labels:ArrayList = new ArrayList();
 		var itemIds:ArrayList = new ArrayList();  
 		for(var i=0;i<inventoryItems.Count;i++) {
-			var item:Hashtable = inventoryItems[i];
+			var item:Hashtable = inventoryItems[i] as Hashtable;
 			if(item["equipped"] != true) {
 				labels.Add(item["label"]);
 				itemIds.Add(item["id"]);
 			}
 		}
 		if(labels.Count > 0) {
-			var inventoryLabels:String[] = labels.ToArray(typeof(String));
+			var inventoryLabels:String[] = labels.ToArray(typeof(String)) as String[];
 			var currentSelectIndex = inventorySelectIndex;
 			inventorySelectIndex = GUILayout.SelectionGrid(inventorySelectIndex, inventoryLabels, 3);
 			if(inventorySelectIndex != -1 && inventorySelectIndex != currentSelectIndex) {
-				var itemId = itemIds[inventorySelectIndex];
-				onInventorySelect(inventorySelectIndex, itemId);
+				onInventorySelect(inventorySelectIndex, itemIds[inventorySelectIndex] as String);
 			}
 		} else {
 			GUILayout.Label("inventory empty");
@@ -424,7 +421,7 @@ function renderInventory() {
 		labels.Clear();
 		itemIds.Clear();
 		for(i=0;i<inventoryItems.Count;i++) {
-			item = inventoryItems[i];
+			item = inventoryItems[i] as Hashtable;
 			if(item["equipped"] == true) {
 				labels.Add(item["label"]);
 				itemIds.Add(item["id"]);
@@ -435,8 +432,7 @@ function renderInventory() {
 			currentSelectIndex = equippedSelectIndex;
 			equippedSelectIndex = GUILayout.SelectionGrid(equippedSelectIndex, equippedLabels, 3);
 			if(equippedSelectIndex != -1 && equippedSelectIndex != currentSelectIndex) {
-				itemId = itemIds[equippedSelectIndex];
-				onEquippedSelect(equippedSelectIndex, itemId);
+				onEquippedSelect(equippedSelectIndex, itemIds[equippedSelectIndex] as String);
 			}
 		} else {
 			GUILayout.Label("no items equipped");
@@ -451,7 +447,7 @@ function renderInventory() {
 	GUILayout.BeginVertical(GUILayout.MinWidth(300));
 	
 	if(selectedItemId) {
-		var selectedItem:Hashtable = inventory.getGood(selectedItemId);
+		var selectedItem:Hashtable = inventory.getGood(selectedItemId) as Hashtable;
 		if(selectedItem == null) {
 			selectedItemId = null;
 		} else {
@@ -524,7 +520,7 @@ function handleRoarLoading() {
 }
 
 RoarIOManager.logInFailedEvent += onLoginFailed;
-function onLoginFailed(msg) {
+function onLoginFailed(msg:String) {
 	rConsole("roar.io Login failed! " + msg);
 	showConfirm(msg);
 	setUIState(UIState.Login);
@@ -551,11 +547,11 @@ function setUIState(s:UIState) {
 	rConsole("entering ui state: " + s);
 }
 
-function rConsole(status) {
+function rConsole(status:String) {
   Debug.Log(status);
 }
 
-function showConfirm(msg) {
+function showConfirm(msg:String) {
 	this.menuDisabled = true;
 	this.gameObject.GetComponent(ConfirmBox).Show(msg, onConfirm);
 }
@@ -564,12 +560,12 @@ function onConfirm() {
 	this.menuDisabled = false;
 }
 
-function onInventorySelect(index, itemId) {
+function onInventorySelect(index, itemId:String) {
 	equippedSelectIndex = -1;
 	selectedItemId = itemId;
 }
 
-function onEquippedSelect(index, itemId) {
+function onEquippedSelect(index, itemId:String) {
 	inventorySelectIndex = -1;
 	selectedItemId = itemId;
 }
@@ -598,7 +594,7 @@ function onInventoryReady() {
 	gameObject.GetComponent(EquipmentManager).Reset();
 	var inventoryItems = inventory.list() as ArrayList;
 	for(var i=0;i<inventoryItems.Count;i++) {
-		var item:Hashtable = inventoryItems[i];
+		var item:Hashtable = inventoryItems[i] as Hashtable;
 		if(item["equipped"] && item["equipped"] != false) {
 			gameObject.GetComponent(EquipmentManager).Equip(item["ikey"]);
 		}
