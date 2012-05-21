@@ -9,6 +9,8 @@ var game_name = "angrybots";
 var user_name = "bobo";
 var password  = "bobo";
 
+var demoSkin : GUISkin;
+
 var pauseIcon : Texture2D;
 private var cornerTextureSize = 48.0f;
 private var fullScreenAvailable:boolean = false;
@@ -119,6 +121,8 @@ function CanPlay() {
 }
 
 function OnGUI () {
+
+	GUI.skin = demoSkin;
 
 	if(CanPlay()) {
 		// render the pause buton
