@@ -63,10 +63,11 @@ private var selectedItemId : String;
 private var inventoryScroll : Vector2;
 private var equippedScroll : Vector2;
 
-
 private var shopSelectIndex = -1;
 private var shopScroll : Vector2;
 private var shopSelectId : String;
+
+private var killCountReward:boolean = false;
 
 private var inMenu = true;
 
@@ -79,6 +80,8 @@ function Start () {
   	roar.Config.setVal( 'game', game_name);
   	inventory = roar.Inventory;
   	shop = roar.Shop;
+  	
+  	InvokeRepeating("RobotKillCheck", 2, 1.0f);
   
   	UpdateAudio ();
 	
@@ -462,19 +465,28 @@ function renderInventory() {
 			GUILayout.Label(selectedItem["equipped"] as String);
 			GUILayout.Box("Actions");
 	
-			if( selectedItem["equipped"] == true )
-	      	{
-		        if(GUILayout.Button("Unequip"))
+			if(selectedItem["consumable"] == true) {
+				if(GUILayout.Button("Use"))
 		        {
-		            inventory.deactivate( item['id'] as String, null);
+		            inventory.use( item['id'] as String, null);
 		        }
-	      	}
-	      	else
-	      	{
-		        if( GUILayout.Button("Equip") )
-		        {
-		            inventory.activate( item['id'] as String, null);
-		        }
+			} 
+			else
+			{
+				if( selectedItem["equipped"] == true )
+		      	{
+			        if(GUILayout.Button("Unequip"))
+			        {
+			            inventory.deactivate( item['id'] as String, null);
+			        }
+		      	}
+		      	else
+		      	{
+			        if( GUILayout.Button("Equip") )
+			        {
+			            inventory.activate( item['id'] as String, null);
+			        }
+		      	}
 	      	}
 	      	if( selectedItem['sellable'] == true )
 	      	{
@@ -521,6 +533,13 @@ function handleRoarLoading() {
 	   return;
 	}
 	StatusBox.render("Loading roar.io");
+}
+
+RoarIOManager.createUserFailedEvent += onCreateFailed;
+function onCreateFailed(msg:String) {
+	rConsole("roar.io Create User failed! " + msg);
+	showConfirm(msg);
+	setUIState(UIState.Create);
 }
 
 RoarIOManager.logInFailedEvent += onLoginFailed;
@@ -584,6 +603,10 @@ function onUnequipped(goodInfo:RoarIOManager.GoodInfo) {
 	gameObject.GetComponent(EquipmentManager).Unequip(goodInfo.ikey);
 }
 
+RoarIOManager.goodUsedEvent += onUsed;
+function onUsed(goodInfo:RoarIOManager.GoodInfo) {
+	gameObject.GetComponent(EquipmentManager).Use(goodInfo.ikey);
+}
 
 RoarIOManager.goodSoldEvent += onGoodSold;
 function onGoodSold(goodInfo:RoarIOManager.GoodInfo) {
@@ -657,4 +680,24 @@ static function Restart ()
 	}
 	Time.timeScale = 1.0f;
 	Application.LoadLevel (0);
+}
+
+
+function RobotKillCheck() {
+	var spiderKills:int = GameScore.GetKills('EnemySpider');
+	if(spiderKills == 3 && killCountReward == false) {
+		killCountReward = true;
+		if(!roar.Inventory.has('super_speed')) {
+			roar.Actions.execute('kill_count_reward', null);
+		}
+	}
+}
+
+RoarIOManager.roarServerItemAddEvent += onItemAddEvent;
+function onItemAddEvent(info:IXMLNode) {
+	showConfirm("You eliminated 3 spider robots!\nSuper Speed reward added to Inventory.");
+}
+
+function onTaskComplete(info:IXMLNode) {
+//showConfirm("You eliminated 3 spider robots!\nSuper Speed reward added to Inventory.");
 }

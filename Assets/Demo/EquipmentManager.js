@@ -18,3 +18,9 @@ function Equip(equipmentId) {
 function Unequip(equipmentId) {
 	equipMap[equipmentId] = false;
 }
+
+function Use(equipmentId) {
+	if(equipmentId == 'super_speed') {
+		GameObject.FindWithTag ("Player").GetComponent(FreeMovementMotor).walkingSpeed = 11;
+	}
+}
