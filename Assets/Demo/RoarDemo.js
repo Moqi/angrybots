@@ -349,6 +349,22 @@ function renderShop() {
 			GUILayout.Label("no goods available at this time");
 		}
 		
+		GUILayout.Space(20.0f);
+		GUILayout.Box("Space Purse");
+		var gameCoins:String = '';
+		var credits:String = '';
+		if (roar.Properties.hasDataFromServer) 
+		{ 
+			gameCoins = roar.Properties.getValue('gamecoins') as String;
+			credits   = roar.Properties.getValue('premium_web') as String;
+		}
+		GUI.skin = null;
+		GUILayout.Box("Coins");
+		GUILayout.Label(gameCoins);
+		GUILayout.Box("Credits");
+		GUILayout.Label(credits);
+		GUI.skin = demoSkin;
+		
 		GUILayout.EndScrollView();
 	
 	// inventory left column end
@@ -370,7 +386,9 @@ function renderShop() {
 			
 			GUILayout.Box("Actions");
 	
-			var canBuy = true;
+			var gameCoinsAsInt:int = int.Parse(gameCoins);
+			var costAsInt:int = int.Parse(costs['value'] as String);
+			var canBuy = gameCoinsAsInt >= costAsInt;
 			if( canBuy )
 	      	{
 		        if(GUILayout.Button("Buy"))
@@ -693,11 +711,8 @@ function RobotKillCheck() {
 	}
 }
 
-RoarIOManager.roarServerItemAddEvent += onItemAddEvent;
-function onItemAddEvent(info:IXMLNode) {
+RoarIOManager.eventDoneEvent += onEventDone;
+function onEventDone(info:IXMLNode) {
 	showConfirm("You eliminated 3 spider robots!\nSuper Speed reward added to Inventory.");
-}
-
-function onTaskComplete(info:IXMLNode) {
-//showConfirm("You eliminated 3 spider robots!\nSuper Speed reward added to Inventory.");
+	
 }
