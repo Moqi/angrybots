@@ -83,20 +83,6 @@ public class Shop : IShop
     //string id = item["item_id"] as string;
 	string id = item.GetAttribute("item_id");	
 
-
-    // Only add to inventory if it has previously been intialised
-    if (data_store_.Inventory_.hasDataFromServer)
-    {
-      var keysToAdd = new ArrayList();
-      keysToAdd.Add(ikey);
-
-      if (!data_store_.Cache_.has( ikey )) 
-      {
-        data_store_.addToCache( keysToAdd, h => addToInventory( ikey, id ) );
-      }
-      else addToInventory( ikey, id );
-    }
-
     // Notify the system
     //RoarIO.Events.fire( "GOOD_BOUGHT", {
     //    "currency_name": cost["ikey"] as string
@@ -110,20 +96,6 @@ public class Shop : IShop
 	data["id"]=id;
 	data["ikey"]=ikey;
     if (cb!=null) cb( new Roar.CallbackInfo (data, code, msg) );
-  }
-		
-  protected void addToInventory( string ikey, string id )
-  {
-    // Prepare the item to manually add to Inventory
-    Hashtable item = new Hashtable();
-    item[id] = DataModel._clone( data_store_.Cache_._get( ikey ) );
-
-    // Also set the internal reference id (used by templates)
-    var idspec = item[id] as Hashtable;
-    idspec["id"] = id;
-
-    // Manually add to inventory
-    data_store_.Inventory_._set( item );
   }
 		
   // Builds a list of items to fetch from Server by comparing

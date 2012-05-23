@@ -13,6 +13,7 @@ public class Properties : IProperties
   {
 	roar_internal_ = roar_internal;
 	data_store_ = data_store;
+	RoarIOManager.roarServerUpdateEvent += this.OnUpdate;
   }
 
   public void fetch( Roar.Callback callback){ data_store_.Properties_.fetch(callback); }
@@ -39,7 +40,24 @@ public class Properties : IProperties
   {
     if (callback!=null) callback( new Roar.CallbackInfo( data_store_.Properties_.getValue(ikey) ) );
     return data_store_.Properties_.getValue(ikey);
-  }
-}
+    }
 
+	
+
+  protected void OnUpdate(IXMLNode update)
+  {
+    //Since you can get change events from login calls, when the Properties object is not yet setup we need to be careful here:
+    if( ! hasDataFromServer ) return;
+
+    //var d = event['data'] as Hashtable;
+
+    //TODO: This should probably be using RoarIO.Properties._set or something like that but their use is not clear to me
+    var v = getProperty(update.GetAttribute("ikey")) as Hashtable;
+    if(v!=null)
+    {
+      v["value"] = update.GetAttribute("value");
+    }
+ }	
+
+}
 }

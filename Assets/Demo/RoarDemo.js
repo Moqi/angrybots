@@ -623,13 +623,18 @@ function onUnequipped(goodInfo:RoarIOManager.GoodInfo) {
 
 RoarIOManager.goodUsedEvent += onUsed;
 function onUsed(goodInfo:RoarIOManager.GoodInfo) {
+	ResetInventorySelect();
 	gameObject.GetComponent(EquipmentManager).Use(goodInfo.ikey);
 }
 
 RoarIOManager.goodSoldEvent += onGoodSold;
 function onGoodSold(goodInfo:RoarIOManager.GoodInfo) {
+	ResetInventorySelect();
+}
 
-
+function ResetInventorySelect() {
+	inventorySelectIndex = -1;
+	selectedItemId = null;
 }
 
 RoarIOManager.inventoryReadyEvent += onInventoryReady;
@@ -700,7 +705,6 @@ static function Restart ()
 	Application.LoadLevel (0);
 }
 
-
 function RobotKillCheck() {
 	var spiderKills:int = GameScore.GetKills('EnemySpider');
 	if(spiderKills == 3 && killCountReward == false) {
@@ -714,5 +718,4 @@ function RobotKillCheck() {
 RoarIOManager.eventDoneEvent += onEventDone;
 function onEventDone(info:IXMLNode) {
 	showConfirm("You eliminated 3 spider robots!\nSuper Speed reward added to Inventory.");
-	
 }

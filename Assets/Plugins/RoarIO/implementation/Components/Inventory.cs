@@ -14,6 +14,7 @@ public class Inventory : IInventory
   {
 	roar_internal_ = roar_internal;
 	data_store_ = data_store;
+	RoarIOManager.roarServerItemAddEvent += this.OnServerItemAdd;
   }
 		
   public bool hasDataFromServer { get { return  data_store_.Inventory_.hasDataFromServer; } }
@@ -235,6 +236,38 @@ public class Inventory : IInventory
   {
     if (callback!=null) callback( new Roar.CallbackInfo(data_store_.Inventory_._get( id )) );
     return data_store_.Inventory_._get( id );
+  }
+
+  protected void OnServerItemAdd(IXMLNode d) {
+	// Only add to inventory if it has previously been intialised
+    if (hasDataFromServer)
+    {
+      var keysToAdd = new ArrayList();
+      var id = d.GetAttribute("item_id");
+      var ikey = d.GetAttribute("item_ikey");
+				
+      keysToAdd.Add(ikey);
+
+      if (!data_store_.Cache_.has( ikey )) 
+      {
+        data_store_.addToCache( keysToAdd, h => addToInventory( ikey, id ) );
+      }
+      else addToInventory( ikey, id );
+    }
+  }
+		
+  protected void addToInventory( string ikey, string id )
+  {
+    // Prepare the item to manually add to Inventory
+    Hashtable item = new Hashtable();
+    item[id] = DataModel._clone( data_store_.Cache_._get( ikey ) );
+
+    // Also set the internal reference id (used by templates)
+    var idspec = item[id] as Hashtable;
+    idspec["id"] = id;
+
+    // Manually add to inventory
+    data_store_.Inventory_._set( item );
   }
 		
 }

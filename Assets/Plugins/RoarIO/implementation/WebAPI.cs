@@ -158,6 +158,9 @@ public class WebAPI : IWebAPI
           case "update":
             RoarIOManager.OnRoarServerUpdate(chunkData);
             break;
+		  case "item_add":
+            RoarIOManager.OnRoarServerItemAdd(chunkData);
+            break;
           case "item_use":
             RoarIOManager.OnRoarServerItemUse(chunkData);
             break;
