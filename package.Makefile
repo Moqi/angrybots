@@ -2,16 +2,15 @@
 all: package
 
 package : clean
-	#
-	# ---- export the Assets from the project
-	# TODO: update project path!!!
-	/Applications/Unity/Unity.app/Contents/MacOS/Unity -quit -batchmode -projectPath /Users/fma/git/angrybots -exportPackage Assets AngryBots-RoarIO.unityPackage -logFile dist/logs/export-assets.log
-	# put the unity package in an easy to find location
-	mv AngryBots-RoarIO.unityPackage dist/AngryBots-RoarIO.unityPackage
+	# ---- copy the augmented/new angrybots demo files to the zip
+	mkdir dist/zip
+	zip -r dist/zip/roario-angrybots.zip Assets/Demo
+	zip -r dist/zip/roario-angrybots.zip Assets/Scripts/Fx/LaserScope.js
+	zip -r dist/zip/roario-angrybots.zip Assets/Scripts/Misc/DemoControl.cs	
 	#
 	# ---- Package complete!
-	# ---- Unity package available at dist/RoarIO.unityPackage
+	# ---- Unity package available at dist/zip/RoarIO.unityPackage
 	#
 clean:
 	# ---- clear out any existing package generation files
-	rm -rf dist/package/*
+	rm -rf dist/package/angybots-roario.zip
