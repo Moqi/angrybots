@@ -1,17 +1,11 @@
 
-
 -------------------------------------------------------
 How to setup the RoarIO AngryBots demo project in Unity
 -------------------------------------------------------
 
+PART 1: Import of project Assets
 
-PART 1: Create a new roar.io game
-
-TODO: Will we require the demo users to create a new game?
-
-PART 2: Import of project Assets
-
-To try out the AngryBots RoarIO demo application 3 artifacts are required.
+To try out the AngryBots RoarIO demo applica:tion 3 artifacts are required.
 
 1. The AngryBots Unity package from the Unity Asset store
 http://u3d.as/content/unity-technologies/angry-bots/2aL
