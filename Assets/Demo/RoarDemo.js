@@ -1,3 +1,36 @@
+/*
+Copyright (c) 2012, Run With Robots
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the roar.io library nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY RUN WITH ROBOTS ''AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL MICHAEL ANDERSON BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/*
+Note that a number of basic menu related functions in this source file
+have been copied/derived from similarly named functions in the AngryBots 
+tech demo source AngryBots/Assets/Scripts/Misc/DemoControl.cs, downloaded via
+http://u3d.as/content/unity-technologies/angry-bots/2aL
+*/
 #pragma strict
 
 import Roar.Components;
@@ -17,8 +50,6 @@ private var fullScreenAvailable:boolean = false;
 private var quitEnabled:boolean = true;
 private var directKeyQuit:boolean = true;
 
-// TODO: SystemXMLNodeFactory is broken
-// IXMLNodeFactory.instance = new SystemXMLNodeFactory();		
 IXMLNodeFactory.instance = new XMLNodeFactory();
 
 /**
@@ -76,6 +107,9 @@ function Awake()
   roar = gameObject.Find("Roar").GetComponent(RoarIO) as IRoarIO;
 }
 
+/*
+Based on similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
+*/
 function Start () {
   	roar.Config.setVal( 'game', game_name);
   	inventory = roar.Inventory;
@@ -107,6 +141,9 @@ function Start () {
 	}
 }
 
+/*
+Based on similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
+*/
 function FlipPause() {
 	inMenu = !inMenu;
 	if(inMenu) {
@@ -651,32 +688,50 @@ function onInventoryReady() {
 	}
 }
 
+/*
+Copied from similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
+*/
 function GetAudioEnabled()
 {
 	return PlayerPrefs.GetInt ("Play audio", 1) != 0;
 }
 	
+/*
+Copied from similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
+*/	
 function SetAudioEnabled(e) 
 {
 	PlayerPrefs.SetInt ("Play audio", e ? 1 : 0);
 	UpdateAudio ();
 }
 
+/*
+Copied from similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
+*/
 function UpdateAudio ()
 {
 	AudioListener.volume = GetAudioEnabled() ? 1.0f : 0.0f;
 }
 
+/*
+Copied from similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
+*/
 function FlipFullscreen ()
 {
 	Screen.fullScreen = !Screen.fullScreen;
 }
 
+/*
+Copied from similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
+*/
 function FlipMute ()
 {
 	SetAudioEnabled(!GetAudioEnabled());
 }
 
+/*
+Based on similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
+*/
 function Update ()
 {
 	if (directKeyQuit)
@@ -694,6 +749,9 @@ function Update ()
 	}
 }
 
+/*
+Based on similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
+*/
 static function Restart ()
 {
 	var instance:RoarDemo = FindObjectOfType (typeof (RoarDemo));
