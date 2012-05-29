@@ -1,3 +1,29 @@
+/*
+Copyright (c) 2012, Run With Robots
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the roar.io library nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY RUN WITH ROBOTS ''AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL MICHAEL ANDERSON BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,16 +42,18 @@ public class DataModel
   private bool _isServerCalling = false;
   public bool hasDataFromServer = false;
 
-  protected IRoarInternal roar_internal_;
   protected DC.IXmlToHashtable xmlParser_;
+  protected IRequestSender api_;
+  protected Roar.ILogger logger_;
 
-  public DataModel( string name, string url, string node, ArrayList conditions, IRoarInternal roar_internal, DC.IXmlToHashtable xmlParser )
+  public DataModel( string name, string url, string node, ArrayList conditions, DC.IXmlToHashtable xmlParser, IRequestSender api, Roar.ILogger logger )
   {
     _name = name;
     _serverDataAPI = url;
     _node = node;
-    roar_internal_ = roar_internal;
     xmlParser_ = xmlParser;
+    api_ = api;
+    logger_=logger;
   }
 
   // Return code for calls attempting to access/modify Model data
@@ -36,7 +64,7 @@ public class DataModel
     string msg = "No data intialised for Model: " + _name;
     if (key!=null) msg  += " (Invalid access for \""+key+"\")";
 
-    if (roar_internal_.isDebug()) Debug.Log( "[roar] -- "+msg );
+    logger_.DebugLog( "[roar] -- "+msg );
   }
 
   // Removes all attributes from the model
@@ -68,7 +96,7 @@ public class DataModel
     // - Unity doesn't easily support functions as strings: func['sub']['mo']()
     Hashtable args = new Hashtable();
     args["cb"] = cb;
-    roar_internal_.doCoroutine( roar_internal_.WebAPI.sendCore( _serverDataAPI, p, onFetch, args) );
+    api_.make_call( _serverDataAPI, p, onFetch, args);
 
     this._isServerCalling = true;
     return true;
@@ -88,7 +116,7 @@ public class DataModel
       return;
     }
 
-    Debug.Log ("onFetch got given: "+d.DebugAsString() );
+    logger_.DebugLog ("onFetch got given: "+d.DebugAsString() );
 
     // First process the data for Model use
     string[] t = _serverDataAPI.Split('/');
@@ -97,16 +125,12 @@ public class DataModel
     List<IXMLNode> nn = d.GetNodeList(path);
     if(nn==null)
     {
-      Debug.Log ( string.Format("Unable to get node\nFor path = {0}\nXML = {1}", path, d.DebugAsString()) );
+      logger_.DebugLog ( string.Format("Unable to get node\nFor path = {0}\nXML = {1}", path, d.DebugAsString()) );
     }
     else
     {
       this._processData( nn );
     }
-
-    // Note: temporarily disabling 'second' notice (first is in _processData)
-    // // Debug notice if used
-    // if (RoarIO.instance.debug) Debug.Log( '---Model:'+this._name+'\n' + RoarIO.HashToString( this.attributes ) );
 
     // Run the user callback
     if (_cb!=null) _cb( new Roar.CallbackInfo(this.attributes,code,msg) );
@@ -117,7 +141,7 @@ public class DataModel
   {
     Hashtable _o = new Hashtable();
 
-    if (d==null) Debug.Log("[roar] -- No data to process!");
+    if (d==null) logger_.DebugLog("[roar] -- No data to process!");
     else
     {
       for (var i=0; i<d.Count; i++)
@@ -125,13 +149,13 @@ public class DataModel
         string key = xmlParser_.GetKey(d[i]);
         if(key==null)
         {
-          Debug.Log( string.Format ("no key found for {0}", d[i].DebugAsString() ) );
+          logger_.DebugLog( string.Format ("no key found for {0}", d[i].DebugAsString() ) );
           continue;
         }
         Hashtable hh = xmlParser_.BuildHashtable(d[i]);
         if( _o.ContainsKey(key) )
         {
-          Debug.Log ("Duplicate key found");
+          logger_.DebugLog ("Duplicate key found");
         }
         else
         {
@@ -147,10 +171,8 @@ public class DataModel
     // Update the Model
     this._set( _o );
 
-    Debug.Log ("Setting the model in "+_name+" to : "+Roar.Json.ObjectToJSON(_o) );
-
-    // Box.Debug.log('-Server Data-', this._name, this.attributes)
-    if (roar_internal_.isDebug()) Debug.Log("[roar] -- Data Loaded: " + _name);
+    logger_.DebugLog ("Setting the model in "+_name+" to : "+Roar.Json.ObjectToJSON(_o) );
+    logger_.DebugLog("[roar] -- Data Loaded: " + _name);
 
     // Broadcast data ready event
     RoarIOManager.OnComponentReady(this._name);
@@ -242,7 +264,7 @@ public class DataModel
     if ( !this.hasDataFromServer ) { this.onNoData( key ); return null; }
 
     if (this.attributes[key]!=null) { return this.attributes[key] as Hashtable; }
-    Debug.Log("[roar] -- No property found: "+key);
+    logger_.DebugLog("[roar] -- No property found: "+key);
     return null;
   }
 

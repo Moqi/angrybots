@@ -1,28 +1,56 @@
+/*
+Copyright (c) 2012, Run With Robots
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the roar.io library nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY RUN WITH ROBOTS ''AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL MICHAEL ANDERSON BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class WebAPI : IWebAPI
 {
   protected IRoarIO roar_;
-  protected IRoarInternal roarInternal_;
-	
-  public WebAPI(IRoarIO roar, IRoarInternal roar_internal)
+  protected IRequestSender requestSender_;
+
+  public WebAPI(IRoarIO roar, IRequestSender requestSender)
   {
      roar_ = roar;
-     roarInternal_ = roar_internal;
+     requestSender_ = requestSender;
 		
-    admin_ = new AdminActions(this, roarInternal_);
-    friends_ = new FriendsActions(this, roarInternal_);
-    info_ = new InfoActions(this, roarInternal_);
-    items_ = new ItemsActions(this, roarInternal_);
-    leaderboards_ = new LeaderboardsActions(this, roarInternal_);
-    mail_ = new MailActions(this, roarInternal_);
-    shop_ = new ShopActions(this, roarInternal_);
-    scripts_ = new ScriptsActions(this, roarInternal_);
-    tasks_ = new TasksActions(this, roarInternal_);
-    user_ = new UserActions(this, roarInternal_);
-    urbanairship_ = new UrbanairshipActions(this, roarInternal_);
+    admin_ = new AdminActions(requestSender);
+    friends_ = new FriendsActions(requestSender);
+    info_ = new InfoActions(requestSender);
+    items_ = new ItemsActions(requestSender);
+    leaderboards_ = new LeaderboardsActions(requestSender);
+    mail_ = new MailActions(requestSender);
+    shop_ = new ShopActions(requestSender);
+    scripts_ = new ScriptsActions(requestSender);
+    tasks_ = new TasksActions(requestSender);
+    user_ = new UserActions(requestSender);
+    urbanairship_ = new UrbanairshipActions(requestSender);
 
   }
 
@@ -35,149 +63,6 @@ public class WebAPI : IWebAPI
   // `gameKey` is exposed and set in RoarIO as a public UnityEditor variable
   public override string gameKey { get { return gameKey_; } set { gameKey_ = value; } }
   protected string gameKey_ = "";
-
-  public override IEnumerator sendCore( string apicall, Hashtable args, Callback cb, Hashtable opt)
-  {
-    if (gameKey == "")
-    {
-      if (roarInternal_.isDebug()) Debug.Log("[roar] -- No game key set!--");
-      yield break;
-	  //return false;
-    }
-
-    if (roarInternal_.isDebug()) Debug.Log("[roar] -- Calling: "+apicall);
-
-    // Encode POST parameters
-    WWWForm post = new WWWForm();
-	if(args!=null)
-	{
-      foreach (DictionaryEntry param in args)
-      {
-        post.AddField( param.Key as string, param.Value as string );
-      }
-	}
-    // Add the auth_token to the POST
-    post.AddField( "auth_token", roarAuthToken );
-
-    // Fire call sending event
-    RoarIOManager.OnRoarNetworkStart();
-
-    var xhr = new WWW( roar_api_url+gameKey+"/"+apicall+"/", post);
-    yield return xhr;
-
-    // if (roar_.isDebug()) Debug.Log(xhr.text);
-
-    onServerResponse( xhr.text, apicall, cb, opt );
-  }
-
-  protected void onServerResponse( string raw, string apicall, Callback cb, Hashtable opt )
-  {
-    var uc = apicall.Split("/"[0]);
-    var controller = uc[0];
-    var action = uc[1];
-
-    string call_id = "0"; // TODO: Hook this up to History
-
-    // Fire call complete event
-    RoarIOManager.OnRoarNetworkEnd(call_id.ToString() );
-
-    // -- Parse the Roar response
-    // Unexpected server response 
-    if (raw[0] != '<')
-    {
-      // Error: fire the error callback
-      IXMLNode errorXml = IXMLNodeFactory.instance.Create("error", raw);
-      if (cb!=null) cb( errorXml, FATAL_ERROR, "Invalid server response", call_id, opt );
-      return;
-    }
-
-    IXMLNode rootNode = IXMLNodeFactory.instance.Create( raw );
-
-    int callback_code;
-    string callback_msg="";
-
-    // XMLNode extends Boo.Lang.Hash
-    // XMLNodeList is Array - must point to node sibling level (not parent)
-    IXMLNode actionNode = rootNode.GetNode( "roar>0>"+controller+">0>"+action+">0" );
-    // Hash XML keeping _name and _text values by default
-
-    // Pre-process <server> block if any and attach any processed data
-    IXMLNode serverNode = rootNode.GetNode( "roar>0>server>0" );
-    notifyOfServerChanges( serverNode );
-
-    // Status on Server returned an error. Action did not succeed.
-    string status = actionNode.GetAttribute( "status" );
-    if (status == "error")
-    {
-      callback_code = UNKNOWN_ERR;
-      callback_msg = actionNode.GetFirstChild("error").Text;
-      string server_error = actionNode.GetFirstChild("error").GetAttribute("type");
-      if ( server_error == "0" )
-      {
-        if (callback_msg=="Must be logged in") { callback_code = UNAUTHORIZED; }
-        if (callback_msg=="Invalid auth_token") { callback_code = UNAUTHORIZED; }
-        if (callback_msg=="Must specify auth_token") { callback_code = BAD_INPUTS; }
-        if (callback_msg=="Must specify name and hash") { callback_code = BAD_INPUTS; }
-        if (callback_msg=="Invalid name or password") { callback_code = DISALLOWED; }
-        if (callback_msg=="Player already exists") { callback_code = DISALLOWED; }
-      }
-
-      // Error: fire the callback
-      // NOTE: The Unity version ASSUMES callback = errorCallback
-      if (cb!=null) cb( rootNode, callback_code, callback_msg, call_id, opt );
-    }
-
-    // No error - pre-process the result
-    else
-    {
-      IXMLNode auth_token = actionNode.GetFirstChild("auth_token");
-      if (auth_token!=null) roarAuthToken_ = auth_token.Text;
-
-      callback_code = OK;
-      if (cb!=null) cb( rootNode, callback_code, callback_msg, call_id, opt );
-    }
-
-    RoarIOManager.OnCallComplete( new RoarIOManager.CallInfo(rootNode, callback_code, callback_msg, call_id.ToString() ) );
-  }
-
-  // Checks for a <server> node and broadcasts events
-  // for any matching chunks
-  private void notifyOfServerChanges( IXMLNode server )
-  {
-    if (server==null) return;
-
-    // Dispatch the entire <server> object
-    RoarIOManager.OnRoarServerAll(server);
-    foreach ( IXMLNode chunkData in server.Children)
-    {
-        if(chunkData==null) throw new System.Exception("Null XML Node found!");
-
-        // Reprocess the <task_complete> server chunk
-        switch( chunkData.Name )
-        {
-          case "update":
-            RoarIOManager.OnRoarServerUpdate(chunkData);
-            break;
-		  case "item_add":
-            RoarIOManager.OnRoarServerItemAdd(chunkData);
-            break;
-          case "item_use":
-            RoarIOManager.OnRoarServerItemUse(chunkData);
-            break;
-          case "item_lose":
-            RoarIOManager.OnRoarServerItemLose(chunkData);
-            break;
-          case "inventory_changed":
-            RoarIOManager.OnRoarServerInventoryChanged(chunkData);
-            break;
-          default:
-            Debug.Log("Server event "+chunkData.Name+" not yet implemented");
-            break;
-        }
-    }
-  }
-
-
 
   // Take a Hashtable that has been processed by ToHashDeep and remove _ attributes
   // TODO: This should probably be static
@@ -290,274 +175,273 @@ public class WebAPI : IWebAPI
 
   public class APIBridge
   {
-    protected IWebAPI api;
-    protected IRoarInternal roar_internal_;
-    public APIBridge( IWebAPI caller, IRoarInternal roar_internal ) { api = caller; roar_internal_ = roar_internal; }
+    protected IRequestSender api;
+    public APIBridge( IRequestSender caller ) { api = caller; }
   }
 
 
   public class AdminActions : APIBridge, IAdminActions
   {
-    public AdminActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public AdminActions( IRequestSender caller ) : base(caller) {}
 
-    public void _set( Hashtable obj, Callback cb, Hashtable opt)
+    public void _set( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("admin/set", obj, cb, opt ));
+      api.make_call("admin/set", obj, cb, opt );
     }
 
-    public void delete_player( Hashtable obj, Callback cb, Hashtable opt)
+    public void delete_player( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("admin/delete_player", obj, cb, opt ));
+      api.make_call("admin/delete_player", obj, cb, opt );
     }
 
   }
 
   public class FriendsActions : APIBridge, IFriendsActions
   {
-    public FriendsActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public FriendsActions( IRequestSender caller ) : base(caller) {}
 
-    public void accept( Hashtable obj, Callback cb, Hashtable opt)
+    public void accept( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("friends/accept", obj, cb, opt ));
+      api.make_call("friends/accept", obj, cb, opt );
     }
 
-    public void decline( Hashtable obj, Callback cb, Hashtable opt)
+    public void decline( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("friends/decline", obj, cb, opt ));
+      api.make_call("friends/decline", obj, cb, opt );
     }
 
-    public void invite( Hashtable obj, Callback cb, Hashtable opt)
+    public void invite( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("friends/invite", obj, cb, opt ));
+      api.make_call("friends/invite", obj, cb, opt );
     }
 
-    public void invite_info( Hashtable obj, Callback cb, Hashtable opt)
+    public void invite_info( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("friends/info", obj, cb, opt ));
+      api.make_call("friends/info", obj, cb, opt );
     }
 
-    public void list( Hashtable obj, Callback cb, Hashtable opt)
+    public void list( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("friends/list", obj, cb, opt ));
+      api.make_call("friends/list", obj, cb, opt );
     }
 
-    public void remove( Hashtable obj, Callback cb, Hashtable opt)
+    public void remove( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("friends/remove", obj, cb, opt ));
+      api.make_call("friends/remove", obj, cb, opt );
     }
 
   }
 
   public class InfoActions : APIBridge, IInfoActions
   {
-    public InfoActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public InfoActions( IRequestSender caller ) : base(caller) {}
 
-    public void ping( Hashtable obj, Callback cb, Hashtable opt)
+    public void ping( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("info/ping", null, cb, opt ));
+      api.make_call("info/ping", null, cb, opt );
     }
 
-    public void user( Hashtable obj, Callback cb, Hashtable opt)
+    public void user( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("info/user", obj, cb, opt ));
+      api.make_call("info/user", obj, cb, opt );
     }
 
-    public void poll( Hashtable obj, Callback cb, Hashtable opt)
+    public void poll( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("info/poll", null, cb, opt ));
+      api.make_call("info/poll", null, cb, opt );
     }
 
   }
 
   public class ItemsActions : APIBridge, IItemsActions
   {
-    public ItemsActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public ItemsActions( IRequestSender caller ) : base(caller) {}
 
-    public void equip( Hashtable obj, Callback cb, Hashtable opt)
+    public void equip( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("items/equip", obj, cb, opt ));
+      api.make_call("items/equip", obj, cb, opt );
     }
 
-    public void list( Hashtable obj, Callback cb, Hashtable opt)
+    public void list( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("items/list", null, cb, opt ));
+      api.make_call("items/list", null, cb, opt );
     }
 
-    public void sell( Hashtable obj, Callback cb, Hashtable opt)
+    public void sell( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("items/sell", obj, cb, opt ));
+      api.make_call("items/sell", obj, cb, opt );
     }
 
-    public void _set( Hashtable obj, Callback cb, Hashtable opt)
+    public void _set( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("items/set", obj, cb, opt ));
+      api.make_call("items/set", obj, cb, opt );
     }
 
-    public void unequip( Hashtable obj, Callback cb, Hashtable opt)
+    public void unequip( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("items/unequip", obj, cb, opt ));
+      api.make_call("items/unequip", obj, cb, opt );
     }
 
-    public void use( Hashtable obj, Callback cb, Hashtable opt)
+    public void use( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("items/use", obj, cb, opt ));
+      api.make_call("items/use", obj, cb, opt );
     }
 
-    public void view( Hashtable obj, Callback cb, Hashtable opt)
+    public void view( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("items/view", obj, cb, opt ));
+      api.make_call("items/view", obj, cb, opt );
     }
 
   }
 
   public class LeaderboardsActions : APIBridge, ILeaderboardsActions
   {
-    public LeaderboardsActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public LeaderboardsActions( IRequestSender caller ) : base(caller) {}
 
-    public void list( Hashtable obj, Callback cb, Hashtable opt)
+    public void list( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("leaderboards/list", obj, cb, opt ));
+      api.make_call("leaderboards/list", obj, cb, opt );
     }
 
-    public void view( Hashtable obj, Callback cb, Hashtable opt)
+    public void view( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("leaderboards/view", obj, cb, opt ));
+      api.make_call("leaderboards/view", obj, cb, opt );
     }
 
   }
 
   public class MailActions : APIBridge, IMailActions
   {
-    public MailActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public MailActions( IRequestSender caller ) : base(caller) {}
 
-    public void accept( Hashtable obj, Callback cb, Hashtable opt)
+    public void accept( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("mail/accept", obj, cb, opt ));
+      api.make_call("mail/accept", obj, cb, opt );
     }
 
-    public void send( Hashtable obj, Callback cb, Hashtable opt)
+    public void send( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("mail/send", obj, cb, opt ));
+      api.make_call("mail/send", obj, cb, opt );
     }
 
-    public void what_can_i_accept( Hashtable obj, Callback cb, Hashtable opt)
+    public void what_can_i_accept( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("mail/what_can_i_accept", obj, cb, opt ));
+      api.make_call("mail/what_can_i_accept", obj, cb, opt );
     }
 
-    public void what_can_i_send( Hashtable obj, Callback cb, Hashtable opt)
+    public void what_can_i_send( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("mail/what_can_i_send", obj, cb, opt ));
+      api.make_call("mail/what_can_i_send", obj, cb, opt );
     }
 
   }
 
   public class ShopActions : APIBridge, IShopActions
   {
-    public ShopActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public ShopActions( IRequestSender caller ) : base(caller) {}
 
-    public void list( Hashtable obj, Callback cb, Hashtable opt)
+    public void list( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("shop/list", null, cb, opt ));
+      api.make_call("shop/list", null, cb, opt );
     }
 
-    public void buy( Hashtable obj, Callback cb, Hashtable opt)
+    public void buy( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("shop/buy", obj, cb, opt ));
+      api.make_call("shop/buy", obj, cb, opt );
     }
 
   }
 
   public class ScriptsActions : APIBridge, IScriptsActions
   {
-    public ScriptsActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public ScriptsActions( IRequestSender caller ) : base(caller) {}
 
-    public void run( Hashtable obj, Callback cb, Hashtable opt)
+    public void run( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("scripts/run", obj, cb, opt ));
+      api.make_call("scripts/run", obj, cb, opt );
     }
 
   }
 
   public class TasksActions : APIBridge, ITasksActions
   {
-    public TasksActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public TasksActions( IRequestSender caller ) : base(caller) {}
 
-    public void list( Hashtable obj, Callback cb, Hashtable opt)
+    public void list( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("tasks/list", null, cb, opt ));
+      api.make_call("tasks/list", null, cb, opt );
     }
 
-    public void start( Hashtable obj, Callback cb, Hashtable opt)
+    public void start( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("tasks/start", obj, cb, opt ));
+      api.make_call("tasks/start", obj, cb, opt );
     }
 
   }
 
   public class UserActions : APIBridge, IUserActions
   {
-    public UserActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public UserActions( IRequestSender caller ) : base(caller) {}
 
-    public void achievements( Hashtable obj, Callback cb, Hashtable opt)
+    public void achievements( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("user/achievements", null, cb, opt ));
+      api.make_call("user/achievements", null, cb, opt );
     }
 
-    public void create( Hashtable obj, Callback cb, Hashtable opt)
+    public void create( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("user/create", obj, cb, opt ));
+      api.make_call("user/create", obj, cb, opt );
     }
 
-    public void login( Hashtable obj, Callback cb, Hashtable opt)
+    public void login( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("user/login", obj, cb, opt ));
+      api.make_call("user/login", obj, cb, opt );
     }
 
-    public void login_facebook_oauth( Hashtable obj, Callback cb, Hashtable opt)
+    public void login_facebook_oauth( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("facebook/login_oauth", obj, cb, opt ));
+      api.make_call("facebook/login_oauth", obj, cb, opt );
     }
 
-    public void logout( Hashtable obj, Callback cb, Hashtable opt)
+    public void logout( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("user/logout", null, cb, opt ));
+      api.make_call("user/logout", null, cb, opt );
     }
 
-    public void netdrive_save( Hashtable obj, Callback cb, Hashtable opt)
+    public void netdrive_save( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("user/netdrive_set", obj, cb, opt ));
+      api.make_call("user/netdrive_set", obj, cb, opt );
     }
 
-    public void netdrive_fetch( Hashtable obj, Callback cb, Hashtable opt)
+    public void netdrive_fetch( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("user/netdrive_get", obj, cb, opt ));
+      api.make_call("user/netdrive_get", obj, cb, opt );
     }
 
-    public void _set( Hashtable obj, Callback cb, Hashtable opt)
+    public void _set( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("user/set", obj, cb, opt ));
+      api.make_call("user/set", obj, cb, opt );
     }
 
-    public void view( Hashtable obj, Callback cb, Hashtable opt)
+    public void view( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("user/view", null, cb, opt ));
+      api.make_call("user/view", null, cb, opt );
     }
 
   }
 
   public class UrbanairshipActions : APIBridge, IUrbanairshipActions
   {
-    public UrbanairshipActions( IWebAPI caller, IRoarInternal roar_internal ) : base(caller,roar_internal) {}
+    public UrbanairshipActions( IRequestSender caller ) : base(caller) {}
 
-    public void ios_register( Hashtable obj, Callback cb, Hashtable opt)
+    public void ios_register( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("urbanairship/ios_register", obj, cb, opt ));
+      api.make_call("urbanairship/ios_register", obj, cb, opt );
     }
 
-    public void push( Hashtable obj, Callback cb, Hashtable opt)
+    public void push( Hashtable obj, RequestCallback cb, Hashtable opt)
     {
-      roar_internal_.doCoroutine( api.sendCore("urbanairship/push", obj, cb, opt ));
+      api.make_call("urbanairship/push", obj, cb, opt );
     }
 
   }

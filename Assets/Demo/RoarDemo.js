@@ -84,7 +84,7 @@ function Awake()
 Based on similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
 */
 function Start () {
-  	roar.Config.setVal( 'game', game_name);
+  	roar.Config.game = game_name;
   	inventory = roar.Inventory;
   	shop = roar.Shop;
   	

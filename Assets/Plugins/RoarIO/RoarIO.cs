@@ -1,6 +1,40 @@
+/*
+Copyright (c) 2012, Run With Robots
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the roar.io library nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY RUN WITH ROBOTS ''AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL MICHAEL ANDERSON BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+
+public class Logger : Roar.ILogger
+{
+  public void DebugLog( string k )
+  {
+    Debug.Log (k);
+  }
+}
 
 /**
  * Implementation of the IRoarIO interface.
@@ -19,15 +53,15 @@ using System.Collections.Generic;
  * can be found in the IRoarIO class.
  */
 
-public class RoarIO : MonoBehaviour, IRoarIO, IRoarInternal
+public class RoarIO : MonoBehaviour, IRoarIO, IUnityObject
 {
 
 
   public bool debug = true;
   public string gameKey="";
 
-  public Roar.Components.IConfig Config { get { return Config_; } }
-  protected Roar.Components.IConfig Config_;
+  public Roar.IConfig Config { get { return Config_; } }
+  protected Roar.IConfig Config_;
 
   public global::IWebAPI WebAPI { get { return WebAPI_; } }
   protected global::IWebAPI WebAPI_;
@@ -62,15 +96,18 @@ public class RoarIO : MonoBehaviour, IRoarIO, IRoarInternal
    */
   public void Awake()
   {
-    Roar.implementation.DataStore data_store = new Roar.implementation.DataStore(this);
-    WebAPI_ = new global::WebAPI(this,this);
-    User_ = new Roar.implementation.Components.User(this,data_store);
-    Config_ = new Roar.implementation.Components.Config(WebAPI_); //TODO: This Component is a bit weird it would be nicer if it behaved like all the others.
-    Properties_ = new Roar.implementation.Components.Properties( this, data_store );
-    Inventory_ = new Roar.implementation.Components.Inventory( this, data_store );
-    Data_ = new Roar.implementation.Components.Data( this, data_store );
-    Shop_ = new Roar.implementation.Components.Shop( this, data_store );
-    Actions_ = new Roar.implementation.Components.Actions( this, data_store );
+    Config_ = new Roar.implementation.Config();
+    Logger logger = new Logger();
+
+    RequestSender api = new RequestSender(Config_,this,logger);
+    Roar.implementation.DataStore data_store = new Roar.implementation.DataStore(api, logger);
+    WebAPI_ = new global::WebAPI(this,api);
+    User_ = new Roar.implementation.Components.User(WebAPI_.user,data_store, logger);
+    Properties_ = new Roar.implementation.Components.Properties( data_store );
+    Inventory_ = new Roar.implementation.Components.Inventory( WebAPI_.items, data_store, logger);
+    Data_ = new Roar.implementation.Components.Data( WebAPI_.user, data_store, logger);
+    Shop_ = new Roar.implementation.Components.Shop( WebAPI_.shop, data_store, logger );
+    Actions_ = new Roar.implementation.Components.Actions( WebAPI_.tasks, data_store );
 
     UrbanAirship_ = new Roar.implementation.Adapters.UrbanAirship(WebAPI_);
 
@@ -78,7 +115,7 @@ public class RoarIO : MonoBehaviour, IRoarIO, IRoarInternal
     DontDestroyOnLoad( this );
 
     // Apply public settings 
-    Config.setVal( "game", gameKey );
+    Config.game = gameKey;
   }
 
   public void Start()
@@ -126,13 +163,12 @@ public class RoarIO : MonoBehaviour, IRoarIO, IRoarInternal
     return Properties.getValue( "name" );
   }
 
-  public bool isDebug()
+  public bool isDebug{ get { return Config.isDebug; } }
+  
+  public void doCoroutine( IEnumerator method )
   {
-    return this.debug;
+     this.StartCoroutine(method);
   }
 
-  public void doCoroutine(IEnumerator methodName)
-  {
-    this.StartCoroutine(methodName);
-  }
+
 }

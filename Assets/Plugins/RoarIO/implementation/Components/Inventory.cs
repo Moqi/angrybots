@@ -1,3 +1,29 @@
+/*
+Copyright (c) 2012, Run With Robots
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the roar.io library nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY RUN WITH ROBOTS ''AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL MICHAEL ANDERSON BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 using System.Collections;
 using Roar.Components;
 using UnityEngine;
@@ -8,15 +34,17 @@ namespace Roar.implementation.Components
 public class Inventory : IInventory
 {
   protected DataStore data_store_;
-  protected IRoarInternal roar_internal_;
+  protected IWebAPI.IItemsActions item_actions_;
+  protected ILogger logger_;
 
-  public Inventory( IRoarInternal roar_internal, DataStore data_store )
+  public Inventory( IWebAPI.IItemsActions item_actions, DataStore data_store, ILogger logger )
   {
-	roar_internal_ = roar_internal;
+	item_actions_ = item_actions;
 	data_store_ = data_store;
+	logger_ = logger;
 	RoarIOManager.roarServerItemAddEvent += this.OnServerItemAdd;
   }
-		
+
   public bool hasDataFromServer { get { return  data_store_.Inventory_.hasDataFromServer; } }
   public void fetch( Roar.Callback callback) { data_store_.Inventory_.fetch(callback); }
 
@@ -32,7 +60,7 @@ public class Inventory : IInventory
     var item = data_store_.Inventory_._get( id );
     if (item==null)
     {
-      if (roar_internal_.isDebug()) Debug.Log("[roar] -- Failed: no record with id: "+id);
+      logger_.DebugLog("[roar] -- Failed: no record with id: "+id);
       return;
     }
 		
@@ -42,7 +70,7 @@ public class Inventory : IInventory
 		
 	Hashtable args = new Hashtable();
 	args["item_id"] = id;
-    roar_internal_.WebAPI.items.equip( args, onActivate, cbOptions );
+    item_actions_.equip( args, onActivate, cbOptions );
   }
 		
   protected void onActivate( IXMLNode d, int code, string msg, string callid, Hashtable opt )
@@ -71,7 +99,7 @@ public class Inventory : IInventory
     var item = data_store_.Inventory_._get( id as string );
     if (item==null)
     {
-      if (roar_internal_.isDebug()) Debug.Log("[roar] -- Failed: no record with id: "+id);
+      logger_.DebugLog("[roar] -- Failed: no record with id: "+id);
       return;
     }
 
@@ -82,7 +110,7 @@ public class Inventory : IInventory
 	Hashtable args = new Hashtable();
 	args["item_id"] = id;
 		
-    roar_internal_.WebAPI.items.unequip( args, onDeactivate, cbOptions );
+    item_actions_.unequip( args, onDeactivate, cbOptions );
   }
   protected void onDeactivate( IXMLNode d, int code, string msg, string callid, Hashtable opt )
   {
@@ -129,7 +157,7 @@ public class Inventory : IInventory
     var item = data_store_.Inventory_._get( id as string );
     if (item==null)
     {
-      if (roar_internal_.isDebug()) Debug.Log("[roar] -- Failed: no record with id: "+id);
+      logger_.DebugLog("[roar] -- Failed: no record with id: "+id);
       return;
     }
 
@@ -137,7 +165,7 @@ public class Inventory : IInventory
     if ( (bool)item["sellable"] != true)
     {
       var error = item["ikey"]+": Good is not sellable";
-      if (roar_internal_.isDebug()) Debug.Log("[roar] -- " + error );
+      logger_.DebugLog("[roar] -- " + error );
       if (callback!=null) callback( new Roar.CallbackInfo(null, IWebAPI.DISALLOWED,error) );
       return;
     }
@@ -149,7 +177,7 @@ public class Inventory : IInventory
 	Hashtable args = new Hashtable();
 	args["item_id"] = id;
 
-    roar_internal_.WebAPI.items.sell( args, onSell, cbOptions );
+    item_actions_.sell( args, onSell, cbOptions );
   }
   protected void onSell( IXMLNode d, int code, string msg, string callid, Hashtable opt )
   {
@@ -181,17 +209,17 @@ public class Inventory : IInventory
 
     if (item==null)
     {
-      if (roar_internal_.isDebug()) Debug.Log("[roar] -- Failed: no record with id: "+id);
+      logger_.DebugLog("[roar] -- Failed: no record with id: "+id);
       return;
     }
 		
     // GH#152: Ensure item is consumable first
-	Debug.Log ( Roar.Json.ObjectToJSON(item) );
+	logger_.DebugLog ( Roar.Json.ObjectToJSON(item) );
 		
     if ( (bool)item["consumable"] != true)
     {
       var error = item["ikey"]+": Good is not consumable";
-      if (roar_internal_.isDebug()) Debug.Log( "[roar] -- "+error );
+      logger_.DebugLog( "[roar] -- "+error );
       if (callback!=null) callback( new Roar.CallbackInfo(null,IWebAPI.DISALLOWED,error) );
       return;
     }
@@ -203,7 +231,7 @@ public class Inventory : IInventory
     Hashtable args = new Hashtable();
 	args["item_id"] = id;
 
-    roar_internal_.WebAPI.items.use( args, onUse, cbOptions );
+    item_actions_.use( args, onUse, cbOptions );
   }
   protected void onUse( IXMLNode d, int code, string msg, string callid, Hashtable opt )
   {
@@ -250,7 +278,7 @@ public class Inventory : IInventory
 
       if (!data_store_.Cache_.has( ikey )) 
       {
-        data_store_.addToCache( keysToAdd, h => addToInventory( ikey, id ) );
+        data_store_.Cache_.addToCache( keysToAdd, h => addToInventory( ikey, id ) );
       }
       else addToInventory( ikey, id );
     }
