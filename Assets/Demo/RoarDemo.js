@@ -286,9 +286,11 @@ function renderMain() {
 	
 	GUILayout.Space(50.0f);
 	
-	if(GUILayout.Button( "Resume" ))
-	{
-		FlipPause();
+	if(CanPlay()) {
+		if(GUILayout.Button( "Resume" ))
+		{
+		    FlipPause();   
+		}
 	}
 	
 	if (fullScreenAvailable)
@@ -640,6 +642,14 @@ function onUsed(goodInfo:RoarIOManager.GoodInfo) {
 RoarIOManager.goodSoldEvent += onGoodSold;
 function onGoodSold(goodInfo:RoarIOManager.GoodInfo) {
 	ResetInventorySelect();
+	gameObject.GetComponent(EquipmentManager).Unequip(goodInfo.ikey);
+}
+
+RoarIOManager.goodBoughtEvent += onGoodBought;
+function onGoodBought(purchaseInfo:RoarIOManager.PurchaseInfo) {
+	ResetInventorySelect();
+	userToolbarIndex = 1;
+	setUIState(UIState.Inventory);
 }
 
 function ResetInventorySelect() {

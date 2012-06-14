@@ -39,8 +39,8 @@ static function render() {
 
 	GUILayout.BeginArea (dialogRect, GUI.skin.GetStyle("Box"));
 	
-		var intro  = "This is a modified version of the official Unity AngryBots tech demo.";
-		    intro += "\nIt demonstrates some of the features of the roar.io api.";
+		var intro  = "This is a modified version of the official Unity AngryBots tech demo. ";
+		    intro += "It demonstrates some of the features of the roar unity sdk.";
 	
 		GUILayout.Label(intro);
 		
