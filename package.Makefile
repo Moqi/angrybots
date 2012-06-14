@@ -3,14 +3,13 @@ all: package
 
 package : clean
 	# ---- copy the augmented/new angrybots demo files to the zip
-	mkdir dist/zip
-	zip -r dist/zip/roario-angrybots.zip Assets/Demo
-	zip -r dist/zip/roario-angrybots.zip Assets/Scripts/Fx/LaserScope.js
-	zip -r dist/zip/roario-angrybots.zip Assets/Scripts/Misc/DemoControl.cs	
+	mkdir -p dist/zip
+	cd Assets;zip -r ../dist/zip/roarsdk-angrybots.zip Demo
+	cd Assets;zip -r ../dist/zip/roarsdk-angrybots.zip Scripts/Fx/LaserScope.*
+	cd Assets;zip -r ../dist/zip/roarsdk-angrybots.zip Scripts/Misc/DemoControl.*
 	#
-	# ---- Package complete!
-	# ---- Unity package available at dist/zip/RoarIO.unityPackage
+	# ---- Unity AngryBots roar sdk asset overlay zip available at: dist/zip/roarsdk-angrybots.zip
 	#
 clean:
-	# ---- clear out any existing package generation files
-	rm -rf dist/package/angybots-roario.zip
+	# ---- clear out any existing zip
+	rm -rf dist/zip
