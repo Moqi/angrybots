@@ -7,7 +7,8 @@ http://u3d.as/content/unity-technologies/angry-bots/2aL
 #pragma strict
 
 import Roar.Components;
- 
+import System.Collections.Generic;
+
 /**
  * roar.io user authentication details.
  **/
@@ -45,7 +46,7 @@ public enum UIState {
 private var uiState : UIState = UIState.Login;
 
 // the roar.io api interface
-private var roar:IRoarIO;
+private var roar:IRoar;
 private var inventory:IInventory;
 private var shop:IShop;
 
@@ -77,14 +78,14 @@ private var inMenu = true;
 
 function Awake()
 {
-  roar = gameObject.Find("Roar").GetComponent(RoarIO) as IRoarIO;
+  roar = gameObject.Find("Roar").GetComponent(IRoar) as IRoar;
 }
 
 /*
 Based on similarly named function in the original AngryBots project file AngryBots/Assets/Scripts/Misc/DemoControl.cs
 */
 function Start () {
-  	roar.Config.game = game_name;
+  	roar.Config.Game = game_name;
   	inventory = roar.Inventory;
   	shop = roar.Shop;
   	
@@ -268,13 +269,13 @@ function renderLogin(create:boolean) {
 			if (GUILayout.Button( "Create User" ))
 		    {
 		      setUIState(UIState.CreatingUser);
-		      roar.create(user_name, password, function(d:Roar.CallbackInfo){});
+		      roar.Create(user_name, password, function(d:Roar.CallbackInfo){});
 		    }		
 		} else {
 			if (GUILayout.Button("Login")) 
 		    {
 		      setUIState(UIState.Authenticating);
-		      roar.login(user_name, password, function(d:Roar.CallbackInfo){});
+		      roar.Login(user_name, password, function(d:Roar.CallbackInfo){});
 		    }
 	    }
 	singleColumnEnd();
@@ -337,25 +338,24 @@ function renderShop() {
 	
 		GUILayout.Box("Goods for Purchase");
 
-		var shopItems = shop.list() as ArrayList;
+		var shopItems : IList.<Roar.DomainObjects.ShopEntry> = shop.List();
 		
 		shopScroll = GUILayout.BeginScrollView(shopScroll);
 		
-		var labels:ArrayList = new ArrayList();
-		var itemIds:ArrayList = new ArrayList();  
+		var labels:List.<String> = new List.<String>();
+		var itemIds:List.<String> = new List.<String>();  
 		for(var i=0;i<shopItems.Count;i++) {
-			var item:Hashtable = shopItems[i] as Hashtable;
-			labels.Add(item["label"]);
-			itemIds.Add(item["shop_ikey"]);
+			var item:Roar.DomainObjects.ShopEntry = shopItems[i];
+			labels.Add(item.label);
+			itemIds.Add(item.ikey);
 		}
 		if(labels.Count > 0) {
-			var shopItemLabels:String[] = labels.ToArray(typeof(String)) as String[];
-			shopSelectIndex = GUILayout.SelectionGrid(shopSelectIndex, shopItemLabels, 3);
+			shopSelectIndex = GUILayout.SelectionGrid(shopSelectIndex, labels.ToArray(), 3);
 			
 			if(shopSelectIndex == -1) {
 				shopSelectId = null;
 			} else {
-				shopSelectId = itemIds[shopSelectIndex] as String;
+				shopSelectId = itemIds[shopSelectIndex];
 			}
 		} else {
 			GUILayout.Label("no goods available at this time");
@@ -365,10 +365,10 @@ function renderShop() {
 		GUILayout.Box("Space Purse");
 		var gameCoins:String = '';
 		var credits:String = '';
-		if (roar.Properties.hasDataFromServer) 
+		if (roar.Properties.HasDataFromServer) 
 		{ 
-			gameCoins = roar.Properties.getValue('gamecoins') as String;
-			credits   = roar.Properties.getValue('premium_web') as String;
+			gameCoins = roar.Properties.GetValue('gamecoins') as String;
+			credits   = roar.Properties.GetValue('premium_web') as String;
 		}
 		GUI.skin = null;
 		GUILayout.Box("Coins");
@@ -386,7 +386,7 @@ function renderShop() {
 	GUILayout.BeginVertical(GUILayout.MinWidth(300));
 	
 	if(shopSelectId) {
-		var selectedItem:Hashtable = shop.getShopItem(shopSelectId) as Hashtable;
+		var selectedItem:Hashtable = shop.GetShopItem(shopSelectId) as Hashtable;
 		if(selectedItem == null) {
 			shopSelectId = null;
 		} else {
@@ -405,7 +405,7 @@ function renderShop() {
 	      	{
 		        if(GUILayout.Button("Buy"))
 		        {
-		            shop.buy( item['shop_ikey'] as String, null);
+		            shop.Buy( item.ikey, null);
 		        }
 	      	}
   		}
@@ -427,7 +427,7 @@ function renderInventory() {
 	
 		GUILayout.Box("Inventory");
 
-		var inventoryItems = inventory.list() as ArrayList;
+		var inventoryItems = inventory.List() as ArrayList;
 		
 		inventoryScroll = GUILayout.BeginScrollView(inventoryScroll);
 		
@@ -484,7 +484,7 @@ function renderInventory() {
 	GUILayout.BeginVertical(GUILayout.MinWidth(300));
 	
 	if(selectedItemId) {
-		var selectedItem:Hashtable = inventory.getGood(selectedItemId) as Hashtable;
+		var selectedItem:Hashtable = inventory.GetGood(selectedItemId) as Hashtable;
 		if(selectedItem == null) {
 			selectedItemId = null;
 		} else {
@@ -498,7 +498,7 @@ function renderInventory() {
 			if(selectedItem["consumable"] == true) {
 				if(GUILayout.Button("Use"))
 		        {
-		            inventory.use( item['id'] as String, null);
+		            inventory.Use( item['id'] as String, null);
 		        }
 			} 
 			else
@@ -507,14 +507,14 @@ function renderInventory() {
 		      	{
 			        if(GUILayout.Button("Unequip"))
 			        {
-			            inventory.deactivate( item['id'] as String, null);
+			            inventory.Deactivate( item['id'] as String, null);
 			        }
 		      	}
 		      	else
 		      	{
 			        if( GUILayout.Button("Equip") )
 			        {
-			            inventory.activate( item['id'] as String, null);
+			            inventory.Activate( item['id'] as String, null);
 			        }
 		      	}
 	      	}
@@ -522,7 +522,7 @@ function renderInventory() {
 	      	{
 	        	if(GUILayout.Button("Sell"))
 	        	{
-	          		inventory.sell( selectedItem['id'] as String, null);
+	          		inventory.Sell( selectedItem['id'] as String, null);
 	      		}
 	  		}
   		}
@@ -556,38 +556,38 @@ function handleCreatingUser() {
  * to load from the server.
  **/
 function handleRoarLoading() {
-	if(roar.Properties.hasDataFromServer && 
-	   roar.Inventory.hasDataFromServer &&
-	   roar.Shop.hasDataFromServer) {
+	if(roar.Properties.HasDataFromServer && 
+	   roar.Inventory.HasDataFromServer &&
+	   roar.Shop.HasDataFromServer) {
 	   setUIState(UIState.InGame);
 	   return;
 	}
 	StatusBox.render("Loading roar.io");
 }
 
-RoarIOManager.createUserFailedEvent += onCreateFailed;
+RoarManager.createUserFailedEvent += onCreateFailed;
 function onCreateFailed(msg:String) {
 	rConsole("roar.io Create User failed! " + msg);
 	showConfirm(msg);
 	setUIState(UIState.Create);
 }
 
-RoarIOManager.logInFailedEvent += onLoginFailed;
+RoarManager.logInFailedEvent += onLoginFailed;
 function onLoginFailed(msg:String) {
 	rConsole("roar.io Login failed! " + msg);
 	showConfirm(msg);
 	setUIState(UIState.Login);
 }
 
-RoarIOManager.loggedInEvent += onLogin;
+RoarManager.loggedInEvent += onLogin;
 function onLogin()
 {
   rConsole('Logged in with authtoken ' + roar.AuthToken);
   isAuthenticated = true;
   setUIState(UIState.RoarLoading);
-  roar.Properties.fetch(null);
-  roar.Inventory.fetch(null);
-  roar.Shop.fetch(null);
+  roar.Properties.Fetch(null);
+  roar.Inventory.Fetch(null);
+  roar.Shop.Fetch(null);
 }
 
 function setUIState(s:UIState) {
@@ -623,30 +623,30 @@ function onEquippedSelect(index, itemId:String) {
 	selectedItemId = itemId;
 }
 
-RoarIOManager.goodActivatedEvent += onEquipped;
-function onEquipped(goodInfo:RoarIOManager.GoodInfo) {
+RoarManager.goodActivatedEvent += onEquipped;
+function onEquipped(goodInfo:RoarManager.GoodInfo) {
 	gameObject.GetComponent(EquipmentManager).Equip(goodInfo.ikey);
 }
 
-RoarIOManager.goodDeactivatedEvent += onUnequipped;
-function onUnequipped(goodInfo:RoarIOManager.GoodInfo) {
+RoarManager.goodDeactivatedEvent += onUnequipped;
+function onUnequipped(goodInfo:RoarManager.GoodInfo) {
 	gameObject.GetComponent(EquipmentManager).Unequip(goodInfo.ikey);
 }
 
-RoarIOManager.goodUsedEvent += onUsed;
-function onUsed(goodInfo:RoarIOManager.GoodInfo) {
+RoarManager.goodUsedEvent += onUsed;
+function onUsed(goodInfo:RoarManager.GoodInfo) {
 	ResetInventorySelect();
 	gameObject.GetComponent(EquipmentManager).Use(goodInfo.ikey);
 }
 
-RoarIOManager.goodSoldEvent += onGoodSold;
-function onGoodSold(goodInfo:RoarIOManager.GoodInfo) {
+RoarManager.goodSoldEvent += onGoodSold;
+function onGoodSold(goodInfo:RoarManager.GoodInfo) {
 	ResetInventorySelect();
 	gameObject.GetComponent(EquipmentManager).Unequip(goodInfo.ikey);
 }
 
-RoarIOManager.goodBoughtEvent += onGoodBought;
-function onGoodBought(purchaseInfo:RoarIOManager.PurchaseInfo) {
+RoarManager.goodBoughtEvent += onGoodBought;
+function onGoodBought(purchaseInfo:RoarManager.PurchaseInfo) {
 	ResetInventorySelect();
 	userToolbarIndex = 1;
 	setUIState(UIState.Inventory);
@@ -657,12 +657,12 @@ function ResetInventorySelect() {
 	selectedItemId = null;
 }
 
-RoarIOManager.inventoryReadyEvent += onInventoryReady;
+RoarManager.inventoryReadyEvent += onInventoryReady;
 function onInventoryReady() {
 	// make sure the equipment manager knows what the user is equipped with
 	// when the game starts
 	gameObject.GetComponent(EquipmentManager).Reset();
-	var inventoryItems = inventory.list() as ArrayList;
+	var inventoryItems = inventory.List() as ArrayList;
 	for(var i=0;i<inventoryItems.Count;i++) {
 		var item:Hashtable = inventoryItems[i] as Hashtable;
 		if(item["equipped"] && item["equipped"] != false) {
@@ -750,13 +750,13 @@ function RobotKillCheck() {
 	var spiderKills:int = GameScore.GetKills('EnemySpider');
 	if(spiderKills == 3 && killCountReward == false) {
 		killCountReward = true;
-		if(!roar.Inventory.has('super_speed')) {
-			roar.Actions.execute('kill_count_reward', null);
+		if(!roar.Inventory.Has('super_speed')) {
+			roar.Actions.Execute('kill_count_reward', null);
 		}
 	}
 }
 
-RoarIOManager.eventDoneEvent += onEventDone;
+RoarManager.eventDoneEvent += onEventDone;
 function onEventDone(info:IXMLNode) {
 	showConfirm("You eliminated 3 spider robots!\nSuper Speed reward added to Inventory.");
 }
