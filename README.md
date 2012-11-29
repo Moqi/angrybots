@@ -1,7 +1,14 @@
+# Roar Angrybots demo
 
--------------------------------------------------------
-How to setup the Roar Unity SDK AngryBots demo project in Unity
--------------------------------------------------------
+**Nov-Dec 2012**: The [Roar Unity-SDK](http://github.com/roarengine/sdk-unity/) is currently under *heavy beta development*. The code in this Angrybots demo is based on code that is in some cases both **old** and **volatile**. Expect fairly significant, large scale changes over the next 2 weeks.
+
+The "latest" updates are in branch `feature/beta_integration`. Use at your own risk.
+
+Legacy notes below:
+
+---
+
+# How to setup the Roar Unity SDK AngryBots demo project in Unity
 
 PART 1: Import of project Assets
 
