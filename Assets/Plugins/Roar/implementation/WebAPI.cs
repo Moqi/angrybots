@@ -174,6 +174,11 @@ public class WebAPI : IWebAPI
 			api.MakeCall ("facebook/bind_signed", obj, cb);
 		}
 
+        public void bind_oauth(Hashtable obj, IRequestCallback<IXMLNode> cb)
+        {
+            api.MakeCall("facebook/bind_oauth", obj, cb);
+        }
+
 		public void create_oauth (Hashtable obj, IRequestCallback<IXMLNode> cb)
 		{
 			api.MakeCall ("facebook/create_oauth", obj, cb);

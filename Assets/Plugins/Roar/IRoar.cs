@@ -301,7 +301,11 @@ public interface IRoar
 	void Login (string username, string password, Roar.Callback callback=null);
 
 	/**
-   * Login a player using Facebook OAuth.
+   * Login a player using a facebook signed request. This method can only be used when using a Canvas/iframe Unity3D app in facebook.
+   *
+   * Passes a signed request obtained from the facebook page in which the webplayer is embedded
+   * Requests an authentication token from the server for the player,
+   * which is used to validate subsequent requests.
    *
    * On success:
    * - invokes callback with empty data parameter, success code and success message
@@ -311,10 +315,26 @@ public interface IRoar
    * - invokes callback with empty data parameter, error code and error message
    * - fires a RoarManager#logInFailedEvent containing a failure message
    *
-   * @param oauth_token the OAuth token.
+   * @param name the players username
+   * @param hash the players password
    * @param cb the callback function to be passed the result of doLogin.
    **/
-	void LoginFacebookOAuth (string oauth_token, Roar.Callback callback=null);
+	//void LoginFacebookSignedReq(string signedReq, Roar.Callback callback = null);
+	
+	/**
+   * Logs in a player using his facebook account. Will consider login settings from the login module
+   * Will attempt to login using signed request, then using an oauth token.
+   *
+   * On success:
+   * - fires a RoarManager#loggedInEvent
+   *
+   * On failure:
+   * - invokes callback with empty data parameter, error code and error message
+   * - fires a RoarManager#logInFailedEvent containing a failure message
+   *
+   * @param cb the callback function to be passed the result of doLogin.
+   **/
+	void LoginFacebook(Roar.Callback callback = null);
 
 	/**
    * Logs out a user.
@@ -347,6 +367,57 @@ public interface IRoar
    * @param cb the callback function to be passed the result of doCreate.
    **/
 	void Create (string username, string password, Roar.Callback callback=null);
+
+	/**
+   * Creates a new user with the given username and linked to his facebookID. Will login (or attempt to login) to facebook
+   * before 
+   * 
+   * 
+   * On success:
+   * - fires a RoarManager#createdUserEvent
+   * - automatically calls doLogin()
+   *
+   * On failure:
+   * - invokes callback with empty data parameter, error code and error message
+   * - fires a RoarManager#CreateUserEvent containing a failure message
+   *
+   * @param name the players username
+   * @param cb the callback function to be passed the result of doCreate.
+   **/
+	void CreateFacebook (string username, Roar.Callback callback=null);
+
+   /**
+   * Binds the users logged in account to his facebook account. Will attempt a login to facebook if no login is detected
+   * 
+   * On success:
+   * Will bind the facebook account
+   * fires the FacebookManager#BindFacebookSuccessful eevent.
+   * 
+   *
+   * On failure:
+   * - invokes callback with empty data parameter, error code and error message
+   *
+   * @param cb the callback function to be passed the result of doCreate.
+   **/
+	void BindFacebook (Roar.Callback callback=null);
+
+	/**
+   * Creates a new user with the given username and facebook ID via oAuth, and logs
+   * that player in.
+   *
+   * On success:
+   * - fires a RoarManager#createdUserEvent
+   * - automatically calls doLogin()
+   *
+   * On failure:
+   * - invokes callback with empty data parameter, error code and error message
+   * - fires a RoarManager#createUserFailedEvent containing a failure message
+   *
+   * @param name the players username
+   * @param oAuthToken the players password
+   * @param cb the callback function to be passed the result of doCreate.
+   **/
+	//void CreateFacebookOAuthToken (string username, Roar.Callback callback=null);
 
 	/**
    * @todo Document me!

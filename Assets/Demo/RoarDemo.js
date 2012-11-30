@@ -12,7 +12,7 @@ import System.Collections.Generic;
 /**
  * roar.io user authentication details.
  **/
-var game_name = "angrybots";
+var game_name = "shooty";
 var user_name = "bobo";
 var password  = "bobo";
 
@@ -270,12 +270,33 @@ function renderLogin(create:boolean) {
 		    {
 		      setUIState(UIState.CreatingUser);
 		      roar.Create(user_name, password, function(d:Roar.CallbackInfo){});
+		    }	
+		    if (GUILayout.Button( "Create Facebook User" ))
+		    {
+		      setUIState(UIState.CreatingUser);
+		      roar.CreateFacebook(user_name, function(d:Roar.CallbackInfo){});
 		    }		
 		} else {
 			if (GUILayout.Button("Login")) 
 		    {
 		      setUIState(UIState.Authenticating);
 		      roar.Login(user_name, password, function(d:Roar.CallbackInfo){});
+		    }
+		    
+		    if (GUILayout.Button("Login and Bind Facebook")) 
+		    {
+		      setUIState(UIState.Authenticating);
+		      roar.Login(user_name, password, function(d:Roar.CallbackInfo){
+		      
+		      roar.BindFacebook(null);
+		      
+		      });
+		    }
+		    
+		    if (GUILayout.Button("Login Facebook")) 
+		    {
+		      setUIState(UIState.Authenticating);
+		      roar.LoginFacebook(function(d:Roar.CallbackInfo){});
 		    }
 	    }
 	singleColumnEnd();

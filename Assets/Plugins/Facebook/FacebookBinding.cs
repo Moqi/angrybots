@@ -9,25 +9,53 @@ using System.Collections;
 
 public class FacebookBinding : MonoBehaviour
 {
+	public string applicationID;
 	static bool isLoggedIn = false;
+	static bool isAuthorized = false;
+	static string codeParameter = null; //when using oauth this parameter is passed via a get parameter.
+    static string oAuthToken = null;
+
+	static IRoar roar;
 
 	public static void Init( string applicationId )
 	{
 		Debug.Log("FacebookBinding.Init called with "+applicationId);
+		//this application id can be derived either from a variable in the unity3d script (entered in the inspector)
+		//or can be retrieved from the webapi since there is an option to enter it in the admin panel.
+
+		roar = DefaultRoar.Instance;
 	}
 
-	public static string GetAccessToken()
+	static void onLogin(Roar.CallbackInfo info)
 	{
-		if( ! isLoggedIn )
-		{
-			Debug.LogError("FacebookBinding.getAccessToken used when not logged in");
-			return "invalid";
-		}
+		Debug.Log("facebook binding login");
+		Debug.Log(info.msg.ToString());
 
-		Debug.Log ("FacebookBinding.getAccessToken called" );
-		return "abefbedb123123b123abda_facebook_";
 	}
 
+	
+
+	/**
+	 * Creates a user based on the facebook oauth with the requested username.
+	 *
+	 *
+	 * @param Requested name.
+	 **/
+	public static void CreateFacebookOAuth(string requestedName)
+	{
+		roar = DefaultRoar.Instance;
+		if(oAuthToken != null)
+		{
+
+			//roar.CreateFacebookOAuthToken(requestedName, oAuthToken);
+		}
+	}
+
+	
+
+	
+	
+    // This function should trigger the whole login sequence.
 	public static void Login()
 	{
 		isLoggedIn = true;
