@@ -38,6 +38,19 @@ public class DefaultRoar : MonoBehaviour, IRoar, IUnityObject
 	public XMLType xmlParser = XMLType.Lightweight;
 	public GUISkin defaultGUISkin;
 
+    public string facebookApplicationID;
+
+    public FacebookLoginOptions facebookLoginOptions = FacebookLoginOptions.Normal;
+
+    public enum FacebookLoginOptions
+    {
+        Normal, //Signed request first, then graph redirect attempt.
+        SignedRequestOnly, //only allow signed requests. Useful for canvas only apps.
+        ExternalOauthOnly, //Will not attempt to login itself but will use a supplied oauth token.
+        InternalNonjavascriptLoginNOT_IMPLEMENTED, //Login by itself for standalone/ios builds and such.
+    }
+
+
 	public Roar.IConfig Config { get { return config; } }
 	protected Roar.IConfig config;
 
@@ -46,6 +59,9 @@ public class DefaultRoar : MonoBehaviour, IRoar, IUnityObject
 
 	public Roar.Components.IUser User { get { return user; } }
 	protected Roar.Components.IUser user;
+
+	public Roar.Components.IFacebook Facebook { get { return facebook; } }
+	protected Roar.Components.IFacebook facebook;
 
 	public Roar.Components.IProperties Properties { get { return properties; } }
 	protected Roar.Components.IProperties properties;
@@ -58,6 +74,9 @@ public class DefaultRoar : MonoBehaviour, IRoar, IUnityObject
 
 	public Roar.Components.IInventory Inventory { get { return inventory; } }
 	protected Roar.Components.IInventory inventory = null;
+	
+	public Roar.Components.IData Data { get { return data; } }
+	protected Roar.Components.IData data;
 
 	public Roar.Components.IShop Shop { get { return shop; } }
 	protected Roar.Components.IShop shop;
@@ -149,8 +168,10 @@ public class DefaultRoar : MonoBehaviour, IRoar, IUnityObject
 		properties = new Roar.implementation.Components.Properties( datastore );
 		leaderboards = new Roar.implementation.Components.Leaderboards(datastore, logger);
 		inventory = new Roar.implementation.Components.Inventory( webAPI.items, datastore, logger);
+		data = new Roar.implementation.Components.Data( webAPI.user, datastore, logger);
 		shop = new Roar.implementation.Components.Shop( webAPI.shop, datastore, logger );
 		actions = new Roar.implementation.Components.Actions( webAPI.tasks, datastore );
+		facebook = new Roar.implementation.Components.Facebook(webAPI.facebook, datastore, logger);
 
 		if (!Application.isEditor)
 		{
@@ -185,15 +206,32 @@ public class DefaultRoar : MonoBehaviour, IRoar, IUnityObject
 		User.DoLogin(username,password,callback);
 	}
 
-	public void LoginFacebookOAuth( string oauth_token, Roar.Callback callback=null )
+	public void LoginFacebook(Roar.Callback callback = null)
 	{
-		User.DoLoginFacebookOAuth(oauth_token,callback);
+		Facebook.DoMainLogin(callback);
 	}
 
 	public void Logout( Roar.Callback callback=null )
 	{
 		User.DoLogout(callback);
 	}
+
+	public void CreateFacebook( string username, Roar.Callback callback=null )
+	{
+		Facebook.DoCreateFacebook(username,callback);
+	}
+	
+	public void BindFacebook( Roar.Callback callback=null )
+    {
+        Facebook.DoBindFacebook(callback);
+
+
+    }
+
+    //public void CreateFacebookOAuthToken( string username, Roar.Callback callback=null )
+    //{
+    //    Facebook.DoCreateFacebookOAuth(username, callback);
+    //}
 
 	public void Create( string username, string password, Roar.Callback callback=null )
 	{
@@ -229,6 +267,64 @@ public class DefaultRoar : MonoBehaviour, IRoar, IUnityObject
 		get { return logger; }
 	}
 
+    #region JAVASCRIPT CALLBACK
+    /**
+   * Function that is called from javascript and is handed the facebook code parameter. Call graph.authorize with this.
+   *
+   *
+   * @param code is the get parameter picked up from facebook 'GET'. Can be null.
+   **/
+	void CatchCodeGetPara(string paras)
+	{
+		
+		if(paras.Split(' ')[0] == "")
+		{
+			//Invoke redirect with authorization.
+			//fire event that says we are redirecting to login/authorize.
+
+            Facebook.FacebookGraphRedirect(paras.Split(' ')[1]);
+			
+			return;
+		}
+
+		Debug.Log("got string para");
+		Debug.Log("string is "+paras);
+		string codeParameter = paras.Split(' ')[0];
+        
+		Facebook.FetchOAuthToken(codeParameter);
+
+	}
+
+    
+
+	/**
+	 * Function that is called from javascript and is passed the signedRequest string
+	 *
+	 *
+	 * @param signedRequest is the actual signed request picked up from facebook 'POST'
+	 **/
+	void CatchFacebookRequest(string oAuth)
+	{
+
+        
+		//move to facebook.
+		if (oAuth == "")
+		{
+			Facebook.SignedRequestFailed();
+			//fire signed request event failed. go for the graph api method.
+            
+		}
+		else
+		{
+            Facebook.SetOAuthToken(oAuth);
+
+            Facebook.DoPostLoginAction();
+            
+
+		}
+	}
+
+    #endregion
 	#region EXTERNAL CALLBACKS
 	void OnAppstoreProductData(string productDataXml)
 	{
