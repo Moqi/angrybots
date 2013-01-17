@@ -164,7 +164,7 @@ function OnGUI () {
 	if(inMenu) {
 		Time.timeScale = 0.0f;
 	} else {
-		Time.timeScale = 1.0f;
+		Time.timeScale = 2.0f;
 		return;
 	}
 	// either handle rendering of various loading screen states
