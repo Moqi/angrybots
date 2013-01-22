@@ -858,11 +858,13 @@ namespace Roar
 
 				if (! System.Int32.TryParse( n.SelectSingleNode("./mastery/@level").GetValueOrDefault("0"), out retval.mastery_level))
 				{
-					throw new InvalidXMLElementException("Unable to parse mastery level to integer");
+					//throw new InvalidXMLElementException("Unable to parse mastery level to integer");
+					retval.mastery_level = 0;
 				}
 				if (! System.Int32.TryParse( n.SelectSingleNode("./mastery/@progress").GetValueOrDefault("0"), out retval.mastery_progress))
 				{
-					throw new InvalidXMLElementException("Untable to parse mastery progress to integer");
+					//throw new InvalidXMLElementException("Untable to parse mastery progress to integer");
+					retval.mastery_progress = 0;
 				}
 				
 				retval.costs = ixcrm_parser.ParseCostList(n.SelectSingleNode("./costs") as System.Xml.XmlElement);

@@ -1,5 +1,9 @@
 #pragma strict
 
+import Roar.Components;
+
+private var roar : IRoar;
+
 public var maxHealth : float = 100.0;
 public var health : float = 100.0;
 public var regenerateSpeed : float = 0.0;
@@ -23,8 +27,8 @@ private var damageEffectCenterYOffset : float;
 
 private var colliderRadiusHeuristic : float = 1.0;
 
-
 function Awake () {
+	roar = GameObject.Find("Roar").GetComponent(DefaultRoar) as IRoar;
 	enabled = false;
 	if (damagePrefab) {
 		if (damageEffectTransform == null)
@@ -41,6 +45,33 @@ function Awake () {
 	if (scorchMarkPrefab) {
 		scorchMark = GameObject.Instantiate(scorchMarkPrefab, Vector3.zero, Quaternion.identity);
 		scorchMark.active = false;
+	}
+}
+
+function XP_for_spider (info : Roar.CallbackInfo.<Roar.WebObjects.Tasks.StartResponse>)
+{
+	Debug.Log ("XP awarder for spider");
+}
+
+function XP_for_buzzer (info : Roar.CallbackInfo.<Roar.WebObjects.Tasks.StartResponse>)
+{
+	Debug.Log ("XP awarder for buzzer");
+}
+
+function XP_for_mech (info : Roar.CallbackInfo.<Roar.WebObjects.Tasks.StartResponse>)
+{
+	Debug.Log ("XP awarded for mech");
+}
+
+function process_kill (name)
+{
+	Debug.Log("DESTROYED [" + name + "]");
+	switch (name)
+	{
+	case "EnemySpider": roar.Tasks.Execute("destroy_spider", XP_for_spider); break;
+	case "KamikazeBuzzer": roar.Tasks.Execute("destroy_buzzer", XP_for_buzzer); break;
+	case "EnemyMech": roar.Tasks.Execute("destroy_mech", XP_for_mech); break;
+	default: break;
 	}
 }
 
@@ -93,6 +124,7 @@ function OnDamage (amount : float, fromDirection : Vector3) {
 	if (health <= 0)
 	{
 		GameScore.RegisterDeath (gameObject);
+		if (gameObject.layer != 8) process_kill(gameObject.name);
 		
 		health = 0;
 		dead = true;

@@ -44,15 +44,15 @@ function ChoseNewAnimationTargetCoroutine () {
 
 function Update () {
 
-	var equipManager : EquipmentManager = gameObject.Find("RoarDemo").GetComponent(EquipmentManager);
-	if(!equipManager.IsEquipped('laser_sight')) {
-		this.lRenderer.enabled = false;
-		if (pointer)
-			pointer.renderer.enabled = false;	
-		return;
-	} else {
-		this.lRenderer.enabled = true;
-	}
+	//var equipManager : EquipmentManager = gameObject.Find("RoarDemo").GetComponent(EquipmentManager);
+	//if(!equipManager.IsEquipped('laser_sight')) {
+	//	this.lRenderer.enabled = false;
+	//	if (pointer)
+	//		pointer.renderer.enabled = false;	
+	//	return;
+	//} else {
+	//	this.lRenderer.enabled = true;
+	//}
 	renderer.material.mainTextureOffset.x += Time.deltaTime * aniDir * scrollSpeed;
 	renderer.material.SetTextureOffset ("_NoiseTex", Vector2 (-Time.time * aniDir * scrollSpeed, 0.0));
 

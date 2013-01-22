@@ -94,7 +94,7 @@ public class GameScore : MonoBehaviour
 	{
 		if (Instance == null)
 		{
-			Debug.Log ("Game score not loaded");
+			Debug.Log("Game score not loaded");
 			return;
 		}
 		
@@ -109,6 +109,7 @@ public class GameScore : MonoBehaviour
 		else if (deadObject.layer == enemyLayer)
 		{
 			Instance.kills[deadObject.name] = Instance.kills.ContainsKey (deadObject.name) ? Instance.kills[deadObject.name] + 1 : 1;
+			//Debug.Log("INSTANCE KILLS INCREASED [" + deadObject.name + " : " + Instance.kills [deadObject.name] + "]");
 		}
 	}
 	
