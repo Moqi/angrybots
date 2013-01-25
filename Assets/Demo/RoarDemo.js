@@ -19,6 +19,16 @@ var demoSkin : GUISkin;
 
 var player_level = 127;
 
+var laser_scope_main    : GameObject = null;
+var laser_scope_blue    : GameObject = null;
+var laser_scope_red     : GameObject = null;
+var laser_scope_magenta : GameObject = null;
+var laser_scope_green   : GameObject = null;
+var laser_scope_cyan    : GameObject = null;
+var laser_scope_yellow  : GameObject = null;
+var laser_scope_white   : GameObject = null;
+var laser_scope_black   : GameObject = null;
+
 var pauseIcon : Texture2D;
 private var cornerTextureSize = 48.0f;
 private var fullScreenAvailable:boolean = false;
@@ -766,9 +776,47 @@ function onEventDone(info:System.Runtime.Remoting.IChannelInfo) {
 
 function set_laser_scope_colour (colour : int)
 {
-	if (colour > 8) return;
-	var line_renderer = GameObject.Find("WeaponSlot").GetComponent(LineRenderer);
-	line_renderer.sharedMaterial = line_renderer.materials[colour];
+	if (laser_scope_main) laser_scope_main.SetActiveRecursively(false);
+	if (laser_scope_blue) laser_scope_blue.SetActiveRecursively(false);
+	if (laser_scope_red) laser_scope_red.SetActiveRecursively(false);
+	if (laser_scope_magenta) laser_scope_magenta.SetActiveRecursively(false);
+	if (laser_scope_green) laser_scope_green.SetActiveRecursively(false);
+	if (laser_scope_cyan) laser_scope_cyan.SetActiveRecursively(false);
+	if (laser_scope_yellow) laser_scope_yellow.SetActiveRecursively(false);
+	if (laser_scope_white) laser_scope_white.SetActiveRecursively(false);
+	if (laser_scope_black) laser_scope_black.SetActiveRecursively(false);
+	switch (colour)
+	{
+	case 1:
+		if (laser_scope_main) laser_scope_main.SetActiveRecursively(true);
+		break;
+	case 2:
+		if (laser_scope_blue) laser_scope_blue.SetActiveRecursively(true);
+		break;
+	case 3:
+		if (laser_scope_red) laser_scope_red.SetActiveRecursively(true);
+		break;
+	case 4:
+		if (laser_scope_magenta) laser_scope_magenta.SetActiveRecursively(true);
+		break;
+	case 5:
+		if (laser_scope_green) laser_scope_green.SetActiveRecursively(true);
+		break;
+	case 6:
+		if (laser_scope_cyan) laser_scope_cyan.SetActiveRecursively(true);
+		break;
+	case 7:
+		if (laser_scope_yellow) laser_scope_yellow.SetActiveRecursively(true);
+		break;
+	case 8:
+		if (laser_scope_white) laser_scope_white.SetActiveRecursively(true);
+		break;
+	case 9:
+		if (laser_scope_main) laser_scope_main.SetActiveRecursively(true);
+		break;
+	default:
+		break;
+	}
 }
 
 RoarManager.roarServerLevelUpEvent += OnLevelUp;
