@@ -1,0 +1,319 @@
+# Roar Unity Plugin
+
+<!-- Description of Roar from the web page -->
+Roar’s award-winning development platform, the RoarEngine offers game
+developers and development studios a unique toolset for rapid backend
+development of cross platform social and casual games.  The core system is
+powered by a rich game mechanics engine which allows developers to create
+complex functionality including:  creating and managing virtual goods,
+developing quests and tasks, integrating badges, achievements and leaderboards,
+and earning real revenue through premium virtual currency sales.   With
+RoarEngine, developers focus on making games fun, engaging and profitable
+rather than on building complex technical backend systems.  Cloud-based, the
+RoarEngine offers true cross platform game development and distribution on all
+platfirms including:  (need list)  Roar takes development times of months, even
+years to weeks and days.
+
+<!-- description of the plugin -->
+The Roar Unity plugin makes adding these features to your game easy.
+You can add leaderboards, shops, server authorative stats and more.
+
+## Quick-start
+
+This is meant to explain how to create the test scene usually found in the
+`dev` folder of the Unity3D project. The test scene is a very simple scene that
+utilizes a few widgets and can make calls to the roar engine using these
+widgets.  This document should be updated as and when the test scene itself is
+updated with new features added to the Unity3D Roar plugin.
+
+It is convenient to have the login module to activate on startup for the purposes of this scene. 
+The module is automatically created by default under the main Roar systems object. 
+The exact path in the scene hierarchy is Roar/RoarUI/Login. Select this gameobject 
+and uncheck the ‘disable on awake’ option to have the module be enabled when you startup.
+
+You start off with an empty scene and nothing but a camera. To begin you need
+to add the main Roar system object. You do this through the Unity menu
+(`GameObject`$\to$`Create Other`$\to$`Roar`$\to$`System Object`). If this menu is not available
+it means you are missing the Assets/Editor/Roarengine/RoarObjectFactory.cs
+file. This will create a system object in your scene and this object is what
+you use to configure Roar. You need to enter your game key in the `Game Key`
+section here. This is the key that all calls using the Unity plugin will use.
+
+You can now begin dropping widgets into your game. Widgets are small scripts
+that can be configured to display information from the roar server. You can
+create a widget either by going to the menu at the top and selecting
+(`GameObject`$\to$`Create Other`$\to$`Roar`$\to$). This will create an empty game object in
+your scene with the selected widget script attached. Currently the Stats,
+Rankings, Leaderboards, Shop and Friends list widgets are available. 
+
+If the widget you are looking for is not available in this menu and is in your
+project you can manually drop it onto any game object by looking for the .cs
+file and dragging it onto an empty game object. 
+
+Widgets that are created can be configured by tweaking the custom inspector
+available when selecting a widget. There are some common properties of all
+widgets such as whether they are a dragable window and their alignments on the
+screen. At the bottom are custom properties based on the type of widget
+selected. Look out for warnings and alerts from the inspector window such as
+content bounds with width and height being 0. 
+
+Finally you need a way to trigger the widgets to enable and disable them. The
+test scene uses 3d rotating cubes that when clicked on will toggle the
+`enabled` property of the widget script on the gameobject. You can use any
+means to enable and disable scripts but avoid using GUI as they could interfere
+with the GUI of the widgets itself. A script like this will cause the widget
+component/script to toggle between enable and disable on clicking on it:
+
+~~~{.cs}
+void OnMouseDown() {
+ target.GetComponent<RoarLeaderboardsWidget>().enabled = ! target.GetComponent<RoarLeaderboardsWidget>().enabled;
+ }
+~~~
+
+`target` is the gameobject that holds the widget itself. Make sure the game
+object that holds this fragment has a collider attached to it. 
+
+## Styling widgets
+
+### Positioning the widgets
+
+The overall position of each widget is controlled by several factors.
+The initial dimensions and position are controlled by the `bounds` variable.
+If alignment is set to something other than `None` then `bounds" are modified to
+respect that alignment. Finally any offset values are applied.
+
+The actual *content* of the widget is then contained within a region inside the
+`bounds` called `contentBounds` (The positioning of `contentBounds` is relative
+to `bounds` and if set to `(0,0,0,0)` will default to the entirity of `bounds`.
+
+#### Insert Picture of layout here
+
+### Positioning and styling the contents
+
+The contents of each widget can be controlled through the use of a GUI skin.
+Each of the widgets contents is made from a variety of components each skinable
+and positionable independantly.
+
+GUI skins contain texture, text and positioning information for each component state.
+Through customising the skin you can make the roar widgets look however you like.
+
+## List of widgets
+
+### `RoarFriendsListWidget`
+* Messages
+    * "Fetching Friends" message - style:`"StatusNormal"`
+    * "Error Loading Friends" message - style:`"StatusError"`
+* Actual friends entries 
+    * friend id - formatting:`playerIdFormatString` style:`playerIdFormat`
+    * friend name -  formatting:`nameFormatString` style:`nameFormat`
+    * friend level -  formatting:`levelFormatString` style:`levelFormat`
+
+### `RoarLeaderboardsWidget`
+* Messages
+    * "Fetching leaderboard data..." message - style:`StatusNormal`
+    * "No leaderboards to display" message - style:`StatusNormal`
+* Each entry - style:`leaderboardEntryStyle` from config
+    * dimensions of entry: `leaderboardItemBounds`, spaced  down by `leaderboardItemSpacing`. (Both from config)
+
+### `RoarRankingsWidget`
+* Messages
+    * "Fetching leaderboard ranking data..." - style:`"StatusNormal"`
+    *  "No ranking data.", - style:`"StatusNormal"`
+* Navigation buttons
+    * Next page button 
+    * Previous page button 
+* Entries
+    * Each entry positioned inside rankingItemBounds, spaced down by rankingItemSpacing each time.
+    * Each entry has three pieces:
+         * custom Property - format:`customDataFormat` style:`rankingEntryPlayerRankStyle`
+         * rank - format:`rankFormat` style:`rankStyle`
+         * value - format:`valueFormat` style:`valueStyle`
+
+### `RoarShopWidget`
+* Messages:
+    *  "Fetching shop data..." style:`"StatusNormal"`
+* Entries
+    * item label - style:`shopItemLabelStyle`
+    * item description - style:`shopItemDescriptionStyle`
+    * buy button - `shopItemBuyButtonStyle`
+
+### `RoarStatsWidget`
+Each individual stat can have its own style associated with it.
+
+* Each entry:
+    * title/label : `GUI.Label` `stat.titleStyle`
+    * value : `GUI.Label` `stat.valueStyle`
+
+### Login "widget"
+All sub-widgets are styled using the one skin.
+
+* status : `GUI.Label`,  `statusErrorStyle` or `statusNormalStyle` depending on what status is
+* username : `GUI.TextField`
+* password : `GUI.PasswordField`
+* Log In button : `GUI.Button`
+* Create Account button : `GUI.Button`
+
+
+## How to use the low level code
+
+Before the Roar SDK can be used, it has to be properly installed.
+Please, follow these instructions.
+
+1. The latest Roar.unityPackage can be downloaded from 
+https://github.com/roarengine/sdks/downloads 
+and imported into a newly created or existing unity project.
+
+2. Run the Unity Editor and open the project that you wish to use Roar with or create a new one.
+
+3. Import the Roar Unity sdk package via the menu item at
+Assets->Import Package->Custom Package...
+
+4. Ensure that all files are selected for import and click 'Import'.
+This will add a Plugins/Roar folder to your project.
+
+5. Next create a Roar game object via the menu item at
+Game Object->Create Other->Roar->Scene Object
+
+6. To begin using the Roar SDK, set the game key. This is the same
+name that you used when you created the game from the Roar Admin.
+e.g. http://api.roar.io/yourgamekey
+
+At this point you will be able to make calls to IRoar to interact with the roar server.
+
+
+
+### How the code is structured
+
+
+
+#### Widgets
+#### Cache / DataModel
+### Roar Object Layer
+
+The communication with the Roar Server can be done through an instance of an IRoar class.
+You can obtain it from the DefaultRoar as in the code example below.
+
+~~~{.cs}
+using UnityEngine;
+
+public class MyClass : MonoBehaviour
+{
+	IRoar roar = null;
+	
+	public void SomeFunction ()
+	{
+		roar = DefaultRoar.Instance;
+	}
+}
+~~~
+
+Once you have obtained the access to the roar object, you can start communicating with the Roar Server.
+
+Please note, however, that calls to the roar object do not return anything.
+You can obtain the results from the server by either setting up an event handler or by providing a callback function.
+Some interface functions fire events, some others accept callbacks. In cases where a function supports both event and callback, the choice is yours.
+
+#### Callbacks
+
+Using a callback is quite simple. All you need to do is write a callback methods (OnLogin in our case) and pass it to the roar interface call.
+In this case we use the Login method, which accepts the user name, password and the callback.
+Once the result comes from the server, this callback is activated.
+
+Please observe, the type of the result is Roar.WebObjects.User.LoginResponse.
+It contains several fields, such as code and msg.
+If code = 200 then the login was successful.
+Otherwise, the code and msg fields indicate the reason for failure.
+
+The next two sections examine these two approaches in detail.
+Since the IRoar.Login function support both methods it is easy to compare them.
+
+
+~~~{.cs}
+using UnityEngine;
+
+public class MyLoginClass : MonoBehaviour
+{
+	IRoar roar = null;
+	
+	public void Start ()
+	{
+		roar = DefaultRoar.Instance;
+	}
+	
+	public void OnLogin (Roar.CallbackInfo<Roar.WebObjects.User.LoginResponse> info)
+	{
+		if (info.code == 200)
+		{
+			Debug.Log ("Login Successful!");
+		} else {
+			Debug.Log ("Login Failed (reason: " + info.msg + ")!");
+		}
+	}
+	
+	public void OnMouseDown ()
+	{
+		roar.Login("my_user_name", "my_password", OnLogin);
+	}
+}
+~~~
+
+#### Events
+
+There are few difference between providing a callback and setting up an event.
+
+* The callback method is now split into two different methods: OnLoginSuccess and OnLoginFailure.
+* These events accapt different arguments than Roar.WebObjects.User.LoginResponse. In particular, OnLoginFailure accepts a string indicating the reson, while OnLoginSuccess does not accept anything.
+* The IRoar.Login call passes the null value in place of the callback method.
+* Both events have to be registered through the RoarManager.
+
+
+
+~~~{.cs}
+using UnityEngine;
+
+public class MyLoginClass : MonoBehaviour
+{
+	IRoar roar = null;
+	
+	public void Start ()
+	{
+		roar = DefaultRoar.Instance;
+		RoarManager.loggedInEvent += OnLoginSuccess;
+		RoarManager.logInFailedEvent += OnLoginFailure;
+	}
+	
+	public void OnLoginSuccess ()
+	{
+		Debug.Log ("SUCCESS");
+	}
+	
+	public void OnLoginFailure (string reason)
+	{
+		Debug.Log ("FAILURE (reason = " + reason + ")");
+	}
+	
+	public void OnMouseDown ()
+	{
+		roar.Login("my_user_name", "my_password", null);
+	}
+}
+~~~
+
+The most recent definition of all events and their parameters can be found in src/Assets/Plugins/RoarEngine/RoarManager.cs source file.
+
+### WebAPI
+
+#### Callbacks
+
+#### Events
+
+## Building on iOS
+
+To make the roar SDK work on iOS, you need to switch to iOS deployment and build.
+The first build will fail, however it will generate and open an XCode project
+for you. You will then need to copy all .h and .m files from
+src/Assets/Plugins/RoarEngine/StoreKit/NativeIOS/ into the Classes folder of
+resulting Xcode project.
+
+Then building should succeed ( Assuming you have set up the 
+device signing certificates required by XCode ).

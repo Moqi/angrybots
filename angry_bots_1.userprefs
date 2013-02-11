@@ -1,0 +1,71 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Demo/RoarEngineDemo.js">
+    <Files>
+      <File FileName="../../../sdk-unity/src/Assets/Plugins/RoarEngine/Widgets/RoarStatsWidget.cs" Line="61" Column="4" />
+      <File FileName="Assets/Shaders/Fx/LaserScope.shader" Line="1" Column="1" />
+      <File FileName="Assets/Demo/RoarEngineDemo.js" Line="98" Column="37" />
+      <File FileName="Assets/Plugins/PhotonNetwork/PhotonHandler.cs" Line="127" Column="1" />
+      <File FileName="Assets/Scripts/Weapons/Health.js" Line="53" Column="1" />
+      <File FileName="Assets/Plugins/RoarEngine/Roar/DomainObjects.cs" Line="852" Column="56" />
+      <File FileName="Assets/Plugins/RoarEngine/Roar/implementation/Components/Tasks.cs" Line="52" Column="22" />
+      <File FileName="Assets/Scripts/Fx/BrokenScreen.js" Line="14" Column="1" />
+      <File FileName="Assets/Demo/RoarEngineTestingBed.cs" Line="28" Column="1" />
+      <File FileName="Assets/Plugins/RoarEngine/Widgets/RoarLoginWidget.cs" Line="120" Column="14" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Assembly-CSharp" expanded="True">
+            <Node name="Assets" expanded="True">
+              <Node name="Demo" expanded="True" />
+            </Node>
+          </Node>
+          <Node name="Assembly-CSharp-firstpass" expanded="True">
+            <Node name="Assets" expanded="True">
+              <Node name="Plugins" expanded="True">
+                <Node name="PhotonNetwork" expanded="True" />
+                <Node name="RoarEngine" expanded="True">
+                  <Node name="Roar" expanded="True">
+                    <Node name="implementation" expanded="True">
+                      <Node name="Components" expanded="True" />
+                    </Node>
+                  </Node>
+                  <Node name="Widgets" expanded="True" />
+                </Node>
+              </Node>
+              <Node name="Shaders" expanded="True">
+                <Node name="Fx" expanded="True" />
+              </Node>
+            </Node>
+          </Node>
+          <Node name="Assembly-UnityScript" expanded="True">
+            <Node name="Assets" expanded="True">
+              <Node name="Demo" expanded="True">
+                <Node name="RoarEngineDemo.js" selected="True" />
+              </Node>
+              <Node name="Scripts" expanded="True">
+                <Node name="AI" expanded="True" />
+                <Node name="Fx" expanded="True" />
+                <Node name="Weapons" expanded="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
+      <Pad Id="ConnectionManagerPad">
+        <State selected="True" />
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
