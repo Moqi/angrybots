@@ -1,0 +1,1285 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!29 &1
+SceneSettings:
+  m_ObjectHideFlags: 0
+  m_PVSData: 
+  m_QueryMode: 1
+  m_PVSObjectsArray: []
+  m_PVSPortalsArray: []
+  m_OcclusionBakeSettings:
+    viewCellSize: 1
+    bakeMode: 2
+    memoryUsage: 10485760
+--- !u!104 &2
+RenderSettings:
+  m_Fog: 0
+  m_FogColor: {r: .5, g: .5, b: .5, a: 1}
+  m_FogMode: 3
+  m_FogDensity: .00999999978
+  m_LinearFogStart: 0
+  m_LinearFogEnd: 300
+  m_AmbientLight: {r: .200000003, g: .200000003, b: .200000003, a: 1}
+  m_SkyboxMaterial: {fileID: 0}
+  m_HaloStrength: .5
+  m_FlareStrength: 1
+  m_HaloTexture: {fileID: 0}
+  m_SpotCookie: {fileID: 0}
+  m_ObjectHideFlags: 0
+--- !u!127 &3
+GameManager:
+  m_ObjectHideFlags: 0
+--- !u!157 &4
+LightmapSettings:
+  m_ObjectHideFlags: 0
+  m_LightProbes: {fileID: 0}
+  m_Lightmaps: []
+  m_LightmapsMode: 1
+  m_BakedColorSpace: 0
+  m_UseDualLightmapsInForward: 0
+  m_LightmapEditorSettings:
+    m_Resolution: 50
+    m_LastUsedResolution: 0
+    m_TextureWidth: 1024
+    m_TextureHeight: 1024
+    m_BounceBoost: 1
+    m_BounceIntensity: 1
+    m_SkyLightColor: {r: .860000014, g: .930000007, b: 1, a: 1}
+    m_SkyLightIntensity: 0
+    m_Quality: 0
+    m_Bounces: 1
+    m_FinalGatherRays: 1000
+    m_FinalGatherContrastThreshold: .0500000007
+    m_FinalGatherGradientThreshold: 0
+    m_FinalGatherInterpolationPoints: 15
+    m_AOAmount: 0
+    m_AOMaxDistance: .100000001
+    m_AOContrast: 1
+    m_LODSurfaceMappingDistance: 1
+    m_Padding: 0
+    m_TextureCompression: 0
+    m_LockAtlas: 0
+--- !u!196 &5
+NavMeshSettings:
+  m_ObjectHideFlags: 0
+  m_BuildSettings:
+    agentRadius: .5
+    agentHeight: 2
+    agentSlope: 45
+    agentClimb: .400000006
+    ledgeDropHeight: 0
+    maxJumpAcrossDistance: 0
+    accuratePlacement: 0
+    minRegionArea: 2
+    widthInaccuracy: 16.666666
+    heightInaccuracy: 10
+  m_NavMesh: {fileID: 0}
+--- !u!1 &199454294
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 199454296}
+  - 114: {fileID: 199454295}
+  m_Layer: 0
+  m_Name: Inventory
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &199454295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 199454294}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d12c40df3041ff749a83e0a351c1fbd4, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 100
+    width: 512
+    height: 386
+  contentBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  skin: {fileID: 0}
+  depth: 0
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultCloseButtonStyle
+    headerHeight: 50
+    closeButtonOffset: 30
+    closeButtonSize: 30
+    windowBorderWidth: 7
+  windowInfo:
+    isWindowed: 1
+    supportsDragging: 1
+  displayName: Inventory Widget
+  drawSubheading: 0
+  subheaderName: 
+  subheaderDarkWidth: 100
+  horizontalAlignment: 3
+  verticalAlignment: 3
+  horizontalOffset: 0
+  verticalOffset: 0
+  useScrollView: 0
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 0
+  scrollBarStyle: 
+  spinnerMovieTex: {fileID: 15200000, guid: 959e64b0ba34c9c4b969275a42036880, type: 3}
+  autoEnableOnLogIn: 0
+  autoDisableOnLogout: 1
+  whenToFetch: 2
+  howOftenToFetch: 60
+  labelFormat: DefaultHeavyContentText
+  descriptionFormat: DefaultLightContentText
+  typeFormat: DefaultHeavyContentLeftText
+  consumeButtonFormat: DefaultButton
+  showDescription: 0
+  showType: 1
+  allowSorting: 1
+  maxLabelWidth: 58
+  maxDescriptionFormatWidth: 310
+  maxTypeWidth: 40
+  rowHeight: 32
+  divideHeight: 30
+  margin: 5
+--- !u!4 &199454296
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 199454294}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
+--- !u!1 &453953421
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 453953422}
+  - 114: {fileID: 453953423}
+  m_Layer: 0
+  m_Name: Roar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &453953422
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 453953421}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 1510717982}
+  - {fileID: 1340799530}
+  - {fileID: 1464614849}
+  - {fileID: 199454296}
+  - {fileID: 906782020}
+  - {fileID: 2063613870}
+  - {fileID: 1765055055}
+  - {fileID: 671462277}
+  - {fileID: 1998890868}
+  - {fileID: 1654474001}
+  - {fileID: 609839862}
+  m_Father: {fileID: 0}
+--- !u!114 &453953423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 453953421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9f209d8553cd485ca425ae8d024a439, type: 3}
+  m_Name: 
+  debug: 1
+  appstoreSandbox: 1
+  gameKey: spark
+  defaultGUISkin: {fileID: 11400000, guid: e9a7b12d3982d1b4b9c3f31ff7587cc9, type: 2}
+--- !u!1 &609839861
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 609839862}
+  - 114: {fileID: 609839863}
+  m_Layer: 0
+  m_Name: Widget Bar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &609839862
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 609839861}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
+--- !u!114 &609839863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 609839861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96d2824dbb61e594088df94f759733e5, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1000
+    height: 100
+  contentBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  skin: {fileID: 0}
+  depth: 0
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultCloseButtonStyle
+    headerHeight: 30
+    closeButtonOffset: 30
+    closeButtonSize: 5
+    windowBorderWidth: 8
+  windowInfo:
+    isWindowed: 0
+    supportsDragging: 0
+  displayName: Widget Control Bar
+  drawSubheading: 0
+  subheaderName: Widget
+  subheaderDarkWidth: 100
+  horizontalAlignment: 3
+  verticalAlignment: 3
+  horizontalOffset: 0
+  verticalOffset: 0
+  useScrollView: 0
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 0
+  scrollBarStyle: DefaultScrollbarStyle
+  spinnerMovieTex: {fileID: 0}
+  autoEnableOnLogIn: 1
+  autoDisableOnLogout: 1
+  interButtonSpacing: 0
+  numRows: 2
+--- !u!1 &671462276
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 671462277}
+  - 114: {fileID: 671462278}
+  m_Layer: 0
+  m_Name: Shop
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &671462277
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 671462276}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.46819806, y: .313522816, z: 3.03957415}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
+--- !u!114 &671462278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 671462276}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc557724edd074bb2baba52996bc7f96, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 512
+    height: 386
+  contentBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 512
+    height: 386
+  skin: {fileID: 0}
+  depth: 0
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultCloseButtonStyle
+    headerHeight: 50
+    closeButtonOffset: 30
+    closeButtonSize: 30
+    windowBorderWidth: 7
+  windowInfo:
+    isWindowed: 0
+    supportsDragging: 0
+  displayName: Shop
+  drawSubheading: 0
+  subheaderName: 
+  subheaderDarkWidth: 100
+  horizontalAlignment: 1
+  verticalAlignment: 1
+  horizontalOffset: 0
+  verticalOffset: 0
+  useScrollView: 0
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 1
+  scrollBarStyle: 
+  spinnerMovieTex: {fileID: 15200000, guid: 959e64b0ba34c9c4b969275a42036880, type: 3}
+  autoEnableOnLogIn: 0
+  autoDisableOnLogout: 1
+  whenToFetch: 0
+  howOftenToFetch: 60
+  shopItemLabelStyle: DefaultHeavyContentLeftText
+  shopItemDescriptionStyle: LightTextRightAligned
+  shopItemCostStyle: DefaultHeavyContentLeftText
+  shopItemBuyButtonStyle: DefaultButton
+  buyButtonWidth: 100
+  buyButtonHeight: 40
+  interColumnSeparators: 20
+  divideHeight: 35
+  priceColumnWidth: 40
+  topSeparation: 15
+--- !u!1 &906782019
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 906782020}
+  - 114: {fileID: 906782021}
+  m_Layer: 0
+  m_Name: Leaderboards
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &906782020
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 906782019}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
+--- !u!114 &906782021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 906782019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3051ebc19fd84e198fbc470bd8f870d, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 100
+    width: 512
+    height: 386
+  contentBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 512
+    height: 386
+  skin: {fileID: 0}
+  depth: 0
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultCloseButtonStyle
+    headerHeight: 50
+    closeButtonOffset: 30
+    closeButtonSize: 30
+    windowBorderWidth: 7
+  windowInfo:
+    isWindowed: 1
+    supportsDragging: 0
+  displayName: Leaderboard
+  drawSubheading: 0
+  subheaderName: 
+  subheaderDarkWidth: 100
+  horizontalAlignment: 0
+  verticalAlignment: 1
+  horizontalOffset: 0
+  verticalOffset: 0
+  useScrollView: 1
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 1
+  scrollBarStyle: 
+  spinnerMovieTex: {fileID: 15200000, guid: 959e64b0ba34c9c4b969275a42036880, type: 3}
+  autoEnableOnLogIn: 0
+  autoDisableOnLogout: 1
+  whenToFetch: 0
+  howOftenToFetch: 60
+  leaderboardItemBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 476
+    height: 64
+  leaderboardItemSpacing: 4
+  leaderboardEntryStyle: DefaultButton
+--- !u!1 &1340799529
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1340799530}
+  - 114: {fileID: 1340799531}
+  m_Layer: 0
+  m_Name: Facebook Shop
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1340799530
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1340799529}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.67973709, y: -4.83867073, z: 1.56423426}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
+--- !u!114 &1340799531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1340799529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fc7f4254b70ca147b859ce7990edee8, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  contentBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  skin: {fileID: 0}
+  depth: 0
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultCloseButtonStyle
+    headerHeight: 50
+    closeButtonOffset: 30
+    closeButtonSize: 30
+    windowBorderWidth: 8
+  windowInfo:
+    isWindowed: 0
+    supportsDragging: 0
+  displayName: Widget
+  drawSubheading: 0
+  subheaderName: Widget
+  subheaderDarkWidth: 100
+  horizontalAlignment: 3
+  verticalAlignment: 3
+  horizontalOffset: 0
+  verticalOffset: 0
+  useScrollView: 0
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 0
+  scrollBarStyle: DefaultScrollbarStyle
+  spinnerMovieTex: {fileID: 0}
+  autoEnableOnLogIn: 0
+  autoDisableOnLogout: 1
+  whenToFetch: 2
+  howOftenToFetch: 60
+  shopItemLabelStyle: DefaultHeavyContentText
+  shopItemDescriptionStyle: DefaultLightContentText
+  shopItemCostStyle: DefaultHeavyContentText
+  shopItemBuyButtonStyle: DefaultButton
+  buyButtonWidth: 100
+  buyButtonHeight: 40
+  interColumnSeparators: 5
+  divideHeight: 20
+  priceColumnWidth: 40
+  topSeparation: 15
+--- !u!1 &1371897980
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1371897981}
+  - 20: {fileID: 1371897982}
+  - 92: {fileID: 1371897984}
+  - 124: {fileID: 1371897985}
+  - 81: {fileID: 1371897983}
+  m_Layer: 0
+  m_Name: Main Camera
+  m_TagString: MainCamera
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1371897981
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1371897980}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -.52353406, y: -2.61879539, z: -11.7944164}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+--- !u!20 &1371897982
+Camera:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1371897980}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: .192156866, g: .301960796, b: .474509805, a: .0196078438}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: .300000012
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 100
+  m_Depth: -1
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_HDR: 0
+--- !u!81 &1371897983
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1371897980}
+  m_Enabled: 1
+--- !u!92 &1371897984
+Behaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1371897980}
+  m_Enabled: 1
+--- !u!124 &1371897985
+Behaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1371897980}
+  m_Enabled: 1
+--- !u!1 &1464614848
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1464614849}
+  - 114: {fileID: 1464614851}
+  m_Layer: 0
+  m_Name: Friends
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1464614849
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1464614848}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.46819806, y: .313522816, z: 3.03957415}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
+--- !u!114 &1464614851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1464614848}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 942a3f54f784546fb92399363c2495c9, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 100
+    width: 512
+    height: 386
+  contentBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  skin: {fileID: 0}
+  depth: 0
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultCloseButtonStyle
+    headerHeight: 50
+    closeButtonOffset: 30
+    closeButtonSize: 30
+    windowBorderWidth: 7
+  windowInfo:
+    isWindowed: 0
+    supportsDragging: 0
+  displayName: Friends Widget
+  drawSubheading: 0
+  subheaderName: 
+  subheaderDarkWidth: 100
+  horizontalAlignment: 2
+  verticalAlignment: 1
+  horizontalOffset: 0
+  verticalOffset: 0
+  useScrollView: 0
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 1
+  scrollBarStyle: 
+  spinnerMovieTex: {fileID: 15200000, guid: 959e64b0ba34c9c4b969275a42036880, type: 3}
+  autoEnableOnLogIn: 0
+  autoDisableOnLogout: 1
+  whenToFetch: 2
+  howOftenToFetch: 60
+  entrySpacing: 8
+  entryBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 476
+    height: 32
+  playerIdFormatString: '{0}'
+  playerIdFormat: DefaultHeavyContentText
+  nameFormatString: '{0}'
+  nameFormat: DefaultHeavyContentText
+  levelFormatString: '{0}'
+  levelFormat: DefaultHeavyContentText
+--- !u!1 &1510717981
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1510717982}
+  - 114: {fileID: 1510717983}
+  m_Layer: 0
+  m_Name: Facebook Bind
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1510717982
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1510717981}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
+--- !u!114 &1510717983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1510717981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cb2fb2a413fd69408b93d6146b08191, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 100
+    width: 512
+    height: 386
+  contentBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  skin: {fileID: 0}
+  depth: 0
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultCloseButtonStyle
+    headerHeight: 50
+    closeButtonOffset: 30
+    closeButtonSize: 5
+    windowBorderWidth: 8
+  windowInfo:
+    isWindowed: 0
+    supportsDragging: 0
+  displayName: Bind Widget
+  drawSubheading: 0
+  subheaderName: Widget
+  subheaderDarkWidth: 100
+  horizontalAlignment: 3
+  verticalAlignment: 3
+  horizontalOffset: 0
+  verticalOffset: 0
+  useScrollView: 0
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 0
+  scrollBarStyle: DefaultScrollbarStyle
+  spinnerMovieTex: {fileID: 0}
+  autoEnableOnLogIn: 0
+  autoDisableOnLogout: 1
+  status: 
+  facebookApplicationID: 
+  buttonStyle: DefaultButton
+  buttonWidth: 300
+  buttonHeight: 90
+--- !u!1 &1654474000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1654474001}
+  - 114: {fileID: 1654474002}
+  m_Layer: 0
+  m_Name: Tasks
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1654474001
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1654474000}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: -11.7944164}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
+--- !u!114 &1654474002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1654474000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bde7b340d65a4684e9cce5ecfd821114, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 100
+    width: 880
+    height: 500
+  contentBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  skin: {fileID: 0}
+  depth: 0
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultClosebuttonStyle
+    headerHeight: 50
+    closeButtonOffset: 30
+    closeButtonSize: 30
+    windowBorderWidth: 7
+  windowInfo:
+    isWindowed: 0
+    supportsDragging: 0
+  displayName: Tasks
+  drawSubheading: 0
+  subheaderName: 
+  subheaderDarkWidth: 100
+  horizontalAlignment: 3
+  verticalAlignment: 3
+  horizontalOffset: 0
+  verticalOffset: 0
+  useScrollView: 0
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 0
+  scrollBarStyle: 
+  spinnerMovieTex: {fileID: 15200000, guid: 959e64b0ba34c9c4b969275a42036880, type: 3}
+  autoEnableOnLogIn: 0
+  autoDisableOnLogout: 1
+  labelFormat: DefaultHeavyContentLeftText
+  descriptionFormat: DefaultLightContentText
+  locationFormat: DefaultHeavyContentText
+  detailFormat: DefaultLightContentText
+  showDescription: 1
+  showType: 1
+  allowSorting: 1
+  maxLabelWidth: 250
+  maxDescriptionFormatWidth: 350
+  maxLocationWidth: 100
+  rowHeight: 45
+  buttonWidth: 130
+  buttonHeight: 30
+  divideHeight: 30
+  margin: 5
+--- !u!1 &1765055054
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1765055055}
+  - 114: {fileID: 1765055056}
+  m_Layer: 0
+  m_Name: Rankings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1765055055
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1765055054}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
+--- !u!114 &1765055056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1765055054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d1746b72df9849eaa2e6708df2cc52c, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 100
+    width: 512
+    height: 386
+  contentBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 512
+    height: 386
+  skin: {fileID: 0}
+  depth: 0
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultCloseButtonStyle
+    headerHeight: 50
+    closeButtonOffset: 30
+    closeButtonSize: 30
+    windowBorderWidth: 7
+  windowInfo:
+    isWindowed: 0
+    supportsDragging: 0
+  displayName: Leaderboard
+  drawSubheading: 1
+  subheaderName: None
+  subheaderDarkWidth: 150
+  horizontalAlignment: 2
+  verticalAlignment: 1
+  horizontalOffset: 0
+  verticalOffset: 0
+  useScrollView: 1
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 1
+  scrollBarStyle: 
+  spinnerMovieTex: {fileID: 15200000, guid: 959e64b0ba34c9c4b969275a42036880, type: 3}
+  autoEnableOnLogIn: 0
+  autoDisableOnLogout: 1
+  whenToFetch: 0
+  howOftenToFetch: 60
+  rankingItemBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 476
+    height: 64
+  rankingItemSpacing: 4
+  rankingEntryPlayerRankStyle: LeaderboardRankingPlayerRank
+  rankingEntryPlayerNameStyle: LeaderboardRankingPlayerName
+  rankingEntryPlayerScoreStyle: LeaderboardRankingPlayerScore
+  previousButtonLabel: Previous page
+  previousButtonStyle: DefaultPillboxStyle
+  nextButtonLabel: Next page
+  nextButtonStyle: DefaultPillboxStyle
+  customDataFormat: '{0}:{1}'
+  rankFormat: '{0}'
+  rankStyle: LeaderboardRankingRank
+  valueFormat: '{0}'
+  valueStyle: LeaderboardRankingValue
+  valueWidth: 100
+  rankColumnWidth: 40
+  interColumnSeparators: 40
+  divideHeight: 20
+  sectionHeight: 50
+  topSeparation: 5
+  footerHeight: 60
+  leaderboardId: 
+  leaderboardName: 
+  page: 1
+--- !u!1 &1998890867
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1998890868}
+  - 114: {fileID: 1998890869}
+  m_Layer: 0
+  m_Name: Stats
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1998890868
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1998890867}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 31.1871567, y: 11.8802147, z: -73.9139938}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
+--- !u!114 &1998890869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1998890867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a55eaf128067445d79aca84095dd8391, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 100
+    width: 256
+    height: 100
+  contentBounds:
+    serializedVersion: 2
+    x: 8
+    y: 8
+    width: 256
+    height: 100
+  skin: {fileID: 0}
+  depth: 2
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultCloseButtonStyle
+    headerHeight: 23
+    closeButtonOffset: 20
+    closeButtonSize: 25
+    windowBorderWidth: 8
+  windowInfo:
+    isWindowed: 0
+    supportsDragging: 0
+  displayName: Stats
+  drawSubheading: 0
+  subheaderName: 
+  subheaderDarkWidth: 100
+  horizontalAlignment: 2
+  verticalAlignment: 0
+  horizontalOffset: -32
+  verticalOffset: 32
+  useScrollView: 0
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 1
+  scrollBarStyle: 
+  spinnerMovieTex: {fileID: 0}
+  autoEnableOnLogIn: 1
+  autoDisableOnLogout: 1
+  autoCalculateContentBounds: 1
+  defaultValueFormat: N0
+  statsToDisplay:
+  - enabled: 1
+    key: gamecoins
+    bounds:
+      serializedVersion: 2
+      x: 0
+      y: 0
+      width: 232
+      height: 32
+    title: Coins
+    titleStyle: StatsTitleStyle
+    valueFormat: 
+    valueStyle: StatsValueStyle
+    valueType: 1
+  - enabled: 1
+    key: premium_currency
+    bounds:
+      serializedVersion: 2
+      x: 0
+      y: 32
+      width: 232
+      height: 32
+    title: Fairies
+    titleStyle: StatsTitleStyle
+    valueFormat: 
+    valueStyle: StatsValueStyle
+    valueType: 1
+--- !u!1 &2063613868
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 2063613870}
+  - 114: {fileID: 2063613869}
+  m_Layer: 0
+  m_Name: Login
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2063613869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2063613868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bfd7f9b1c655b64fb5aa8282d78aee4, type: 3}
+  m_Name: 
+  bounds:
+    serializedVersion: 2
+    x: 0
+    y: 100
+    width: 512
+    height: 450
+  contentBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  skin: {fileID: 0}
+  depth: 0
+  apearance:
+    color: {r: 1, g: 1, b: 1, a: 1}
+    boundingStyle: WidgetBoundingStyle
+    windowBoundingStyle: WindowedWidgetBoundingStyle
+    boundingTitle: 
+    boundingImage: {fileID: 0}
+    headerStyle: DefaultHeaderStyle
+    subheaderStyleLeft: DefaultSubheaderStyleLeft
+    subheaderStyleRight: DefaultSubheaderStyleRight
+    closeButtonStyle: DefaultCloseButtonStyle
+    headerHeight: 50
+    closeButtonOffset: 30
+    closeButtonSize: 30
+    windowBorderWidth: 7
+  windowInfo:
+    isWindowed: 1
+    supportsDragging: 1
+  displayName: Login
+  drawSubheading: 0
+  subheaderName: 
+  subheaderDarkWidth: 100
+  horizontalAlignment: 3
+  verticalAlignment: 3
+  horizontalOffset: 0
+  verticalOffset: 0
+  useScrollView: 0
+  alwaysShowHorizontalScrollBar: 0
+  alwaysShowVerticalScrollBar: 0
+  scrollBarStyle: 
+  spinnerMovieTex: {fileID: 15200000, guid: 959e64b0ba34c9c4b969275a42036880, type: 3}
+  autoEnableOnLogIn: 0
+  autoDisableOnLogout: 1
+  enableOnAwake: 1
+  fetchPropertiesOnLogin: 1
+  saveUsername: 1
+  savePassword: 0
+  loginBoxSpacing: 20
+  labelHeight: 25
+  statusWidth: 400
+  fieldHeight: 50
+  fieldWidth: 280
+  buttonWidth: 150
+  buttonHeight: 40
+  footerSpacing: 60
+  buttonSpacing: 10
+  buttonStyle: DefaultButton
+  boxStyle: DefaultTextArea
+  loginLabelStyle: DefaultHeavyContentLeftText
+  statusStyle: DefaultSmallStatusText
+  allowFacebookLogin: 1
+  facebookApplicationID: 152296965024
+--- !u!4 &2063613870
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2063613868}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: -11.7944164}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 453953422}
