@@ -1,7 +1,5 @@
 #pragma strict
 
-#if !UNITY_FLASH
-
 var rigid : Rigidbody;
 var forwardAnim : AnimationClip;
 var backAnim : AnimationClip;
@@ -95,4 +93,3 @@ function OnGUI () {
 	GUILayout.Label ("Walking (0 to 1): "+walking.ToString("0.00"));
 	walking = GUILayout.HorizontalSlider (walking, 0, 1, GUILayout.Width (100));
 }
-#endif

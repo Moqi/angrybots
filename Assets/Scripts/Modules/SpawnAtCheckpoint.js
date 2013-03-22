@@ -3,6 +3,11 @@
 
 var checkpoint : Transform;
 
+
+function Awake(){
+  checkpoint = GameObject.FindGameObjectWithTag("Spawnpoint").transform;
+
+}
 function OnSignal () {
 	transform.position = checkpoint.position;
 	transform.rotation = checkpoint.rotation;

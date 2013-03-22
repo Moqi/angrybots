@@ -30,13 +30,8 @@ private var guiBoundary : Boundary = Boundary ();			// Boundary for joystick gra
 private var guiTouchOffset : Vector2;						// Offset to apply to touch input
 private var guiCenter : Vector2;							// Center of joystick
 
-#if !UNITY_IPHONE && !UNITY_ANDROID
 
-function Awake () {
-	gameObject.active = false;	
-}
 
-#else
 
 function Start () {
 	// Cache this component at startup instead of looking up every frame	
@@ -217,4 +212,3 @@ function Update () {
 	}
 }
 
-#endif

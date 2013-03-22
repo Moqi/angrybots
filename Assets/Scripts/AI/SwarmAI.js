@@ -150,7 +150,7 @@ class SwarmAI extends MonoBehaviour {
 							// Apply damage
 							var targetHealth : Health = player.GetComponent.<Health> ();
 							if (targetHealth) {
-								targetHealth.OnDamage (damageAmount, -playerDir);
+								targetHealth.OnDamage (damageAmount, -playerDir, null);
 							}
 							
 							// Change active attacker

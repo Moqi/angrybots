@@ -16,11 +16,6 @@ function OnCollisionEnter (collisionInfo : Collision) {
 }
 
 function OnFootstep () {
-	if (!audioSource.enabled)
-	{
-		return;
-	}
-	
 	var sound : AudioClip;
 	switch (footType) {
 	case FootType.Player:

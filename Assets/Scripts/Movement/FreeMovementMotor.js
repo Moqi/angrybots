@@ -1,5 +1,5 @@
 #pragma strict
-
+#pragma downcast
 @script RequireComponent (Rigidbody)
 
 class FreeMovementMotor extends MovementMotor {
@@ -10,26 +10,28 @@ class FreeMovementMotor extends MovementMotor {
 	public var turningSmoothing : float = 0.3;
 	
 	function FixedUpdate () {
-		// Handle the movement of the character
-		var targetVelocity : Vector3 = movementDirection * walkingSpeed;
-		var deltaVelocity : Vector3 = targetVelocity - rigidbody.velocity;
-		if (rigidbody.useGravity)
-			deltaVelocity.y = 0;
-		rigidbody.AddForce (deltaVelocity * walkingSnappyness, ForceMode.Acceleration);
 		
-		// Setup player to face facingDirection, or if that is zero, then the movementDirection
-		var faceDir : Vector3 = facingDirection;
-		if (faceDir == Vector3.zero)
-			faceDir = movementDirection;
+            // Handle the movement of the character
+		    var targetVelocity : Vector3 = movementDirection * walkingSpeed;
+		    var deltaVelocity : Vector3 = targetVelocity - rigidbody.velocity;
+		    if (rigidbody.useGravity)
+			    deltaVelocity.y = 0;
+		    rigidbody.AddForce (deltaVelocity * walkingSnappyness, ForceMode.Acceleration);
+    		
+		    // Setup player to face facingDirection, or if that is zero, then the movementDirection
+		    var faceDir : Vector3 = facingDirection;
+		    if (faceDir == Vector3.zero)
+			    faceDir = movementDirection;
+    		
+		    // Make the character rotate towards the target rotation
+		    if (faceDir == Vector3.zero) {
+			    rigidbody.angularVelocity = Vector3.zero;
+		    }
+		    else {
+			    var rotationAngle : float = AngleAroundAxis (transform.forward, faceDir, Vector3.up);
+			    rigidbody.angularVelocity = (Vector3.up * rotationAngle * turningSmoothing);
+		    }
 		
-		// Make the character rotate towards the target rotation
-		if (faceDir == Vector3.zero) {
-			rigidbody.angularVelocity = Vector3.zero;
-		}
-		else {
-			var rotationAngle : float = AngleAroundAxis (transform.forward, faceDir, Vector3.up);
-			rigidbody.angularVelocity = (Vector3.up * rotationAngle * turningSmoothing);
-		}
 	}
 	
 	// The angle between dirA and dirB around axis
@@ -44,5 +46,11 @@ class FreeMovementMotor extends MovementMotor {
 	    // Return angle multiplied with 1 or -1
 	    return angle * (Vector3.Dot (axis, Vector3.Cross (dirA, dirB)) < 0 ? -1 : 1);
 	}
+	
+	 function OnPhotonSerializeView (stream : PhotonStream,  info : PhotonMessageInfo)    
+    {
+        OnPhotonSerializeViewBase(stream, info);
+    }
+	
 	
 }

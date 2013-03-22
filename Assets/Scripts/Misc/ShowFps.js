@@ -21,7 +21,6 @@ function OnDisable ()
 
 function Update()
 {
-#if !UNITY_FLASH
     ++frames;
     var timeNow = Time.realtimeSinceStartup;
     if (timeNow > lastInterval + updateInterval)
@@ -40,5 +39,4 @@ function Update()
         frames = 0;
         lastInterval = timeNow;
     }
-#endif
 }

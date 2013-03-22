@@ -26,20 +26,18 @@ public class ReflectionFx : MonoBehaviour
 	
 	public void Start()
 	{
+		if (!SystemInfo.supportsRenderTextures)
+			this.enabled = false;
+		
 		initialReflectionTextures = new Texture2D[reflectiveMaterials.Length];
 		for (int i = 0; i < reflectiveMaterials.Length; i++)
 		{
 			initialReflectionTextures[i] = reflectiveMaterials[i].GetTexture(reflectionSampler);
-		}		
-		
-		if (!SystemInfo.supportsRenderTextures)
-			this.enabled = false;
+		}
 	}
 	
 	public void OnDisable()
 	{
-		if (initialReflectionTextures == null)
-			return;
 		// restore initial reflection textures
 		for (int i = 0; i < reflectiveMaterials.Length; i++)
 		{

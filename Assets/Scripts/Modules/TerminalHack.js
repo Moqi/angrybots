@@ -15,7 +15,7 @@ function Start () {
 
 function OnTriggerStay (other : Collider) {
 	if (other.gameObject.tag == "Player")
-		health.OnDamage (Time.deltaTime, Vector3.zero);
+		health.OnDamage (Time.deltaTime, Vector3.zero, null);
 }
 
 function OnHacking () {

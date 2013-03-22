@@ -80,10 +80,8 @@ function Awake () {
 	//animation[turn.name].enabled = true;
 }
 
+
 function OnStartFire () {
-	if (Time.timeScale == 0)
-		return;
-	
 	animationComponent[shootAdditive.name].enabled = true;
 }
 

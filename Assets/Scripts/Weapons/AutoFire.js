@@ -1,5 +1,5 @@
 #pragma strict
-
+#pragma downcast
 @script RequireComponent (PerFrameRaycast)
 
 var bulletPrefab : GameObject;
@@ -42,7 +42,7 @@ function Update () {
 				var targetHealth : Health = hitInfo.transform.GetComponent.<Health> ();
 				if (targetHealth) {
 					// Apply damage
-					targetHealth.OnDamage (damagePerSecond / frequency, -spawnPoint.forward);
+					targetHealth.OnDamage (damagePerSecond / frequency, -spawnPoint.forward, this.transform);
 				}
 				
 				// Get the rigidbody if any
@@ -66,9 +66,6 @@ function Update () {
 }
 
 function OnStartFire () {
-	if (Time.timeScale == 0)
-		return;
-	
 	firing = true;
 	
 	muzzleFlashFront.active = true;
@@ -85,3 +82,21 @@ function OnStopFire () {
 	if (audio)
 		audio.Stop ();
 }
+
+
+function OnPhotonSerializeView ( stream : PhotonStream,  info : PhotonMessageInfo)    
+   {
+    if(stream.isWriting){
+    	stream.SendNext(firing);
+    
+    }else{
+    
+    	var val : boolean = stream.ReceiveNext();
+    	if(val)
+    	OnStartFire();
+    	else
+    	OnStopFire();
+    }
+   }
+
+

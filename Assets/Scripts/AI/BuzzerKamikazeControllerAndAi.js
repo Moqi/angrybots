@@ -1,5 +1,7 @@
 #pragma strict
 
+
+
 // Public member data
 public var motor : MovementMotor;
 public var electricArc : LineRenderer;
@@ -18,7 +20,7 @@ private var zapNoise : Vector3 = Vector3.zero;
 
 function Awake () {
 	character = motor.transform;
-	player = GameObject.FindWithTag ("Player").transform;
+	
 	
 	spawnPos = character.position;
 	audioSource = GetComponent.<AudioSource> ();
@@ -29,10 +31,18 @@ function Start () {
 	motor.movementTarget = spawnPos;
 	threatRange = false;	
 }
-
+  
+   
 function Update () {	
+	
+	player = GameManager.GetClosestPlayer(transform.position);
+	if(player==null) return;
+	
 	motor.movementTarget = player.position;
 	direction = (player.position - character.position);
+		
+	if(!GetComponent(typeof(PhotonView)).isMine && !PhotonNetwork.isMasterClient) return;
+ 	
 	
 	threatRange = false;
 	if (direction.magnitude < 2.0f) {
@@ -49,19 +59,26 @@ function Update () {
 			var playerDir : Vector3 = player.position - character.position;
 			var playerDist : float = playerDir.magnitude;
 			playerDir /= playerDist;			
-			targetHealth.OnDamage (damageAmount / (1.0f + zapNoise.magnitude), -playerDir);
+			targetHealth.OnDamage (damageAmount / (1.0f + zapNoise.magnitude), -playerDir,  null);
 		}		
 
-		DoElectricArc();	
+		GetComponent(typeof(PhotonView)).RPC("DoElectricArc", PhotonTargets.All);		
+		//DoElectricArc();	
 		
 		rechargeTimer = Random.Range (1.0f, 2.0f);
 	}
 }
 
+@RPC
 function DoElectricArc () {	
 	if (electricArc.enabled)
 		return;
 	// Play attack sound
+	
+	player = GameManager.GetClosestPlayer(transform.position);
+	var playerPos : Vector3 = transform.position;
+	if(player!=null)
+	 	playerPos = player.position;
 	
 	audioSource.clip = zapSound;
 	audioSource.Play ();
@@ -76,7 +93,7 @@ function DoElectricArc () {
 	var stopTime : float = Time.time + 0.2;
 	while (Time.time < stopTime) {
 		electricArc.SetPosition (0, electricArc.transform.position);
-		electricArc.SetPosition (1, player.position + zapNoise);
+		electricArc.SetPosition (1, playerPos + zapNoise);
 		electricArc.sharedMaterial.mainTextureOffset.x = Random.value;
 		yield;
 	}
@@ -84,3 +101,4 @@ function DoElectricArc () {
 	// Hide electric arc
 	electricArc.enabled = false;
 }
+

@@ -1,5 +1,9 @@
 #pragma strict
 
+import Roar.Components;
+
+private var roar : IRoar = null;
+
 public var maxHealth : float = 100.0;
 public var health : float = 100.0;
 public var regenerateSpeed : float = 0.0;
@@ -25,6 +29,7 @@ private var colliderRadiusHeuristic : float = 1.0;
 
 
 function Awake () {
+	roar = GameObject.Find("Roar").GetComponent(DefaultRoar) as IRoar;
 	enabled = false;
 	if (damagePrefab) {
 		if (damageEffectTransform == null)
@@ -44,14 +49,25 @@ function Awake () {
 	}
 }
 
-function OnDamage (amount : float, fromDirection : Vector3) {
+function process_kill (name) {
+	Debug.Log("DESTROYED [" + name + "]");
+	switch (name)
+	{
+	case "EnemySpider": roar.Tasks.Execute("destroy_spider", null); break;
+	case "KamikazeBuzzer": roar.Tasks.Execute("destroy_buzzer", null); break;
+	case "EnemyMech": roar.Tasks.Execute("destroy_mech", null); break;
+	default: break;
+	}
+}
+
+function OnDamage (amount : float, fromDirection : Vector3, attacker : Transform) {
 	// Take no damage if invincible, dead, or if the damage is zero
 	if(invincible)
-		return;
+		{Debug.Log("..... BECAUSE INVINCIBLE"); return;}
 	if (dead)
-		return;
+		{Debug.Log("......BECAUSE DEAD"); return;}
 	if (amount <= 0)
-		return;
+		{Debug.Log("......BECAUSE AMOUNT"); return;}
 	
 	// Decrease health by damage and send damage signals
 	
@@ -68,6 +84,16 @@ function OnDamage (amount : float, fromDirection : Vector3) {
 	health -= amount;
 	damageSignals.SendSignals (this);
 	lastDamageTime = Time.time;
+	
+	if (health <= 0) {
+		if (attacker != null) {
+			var comp = attacker.GetComponent(typeof(PhotonView));
+			if (comp != null) {
+				if (comp.isMine) process_kill(gameObject.name);
+				else Debug.Log("SOMEONE ELSE SCORED!");
+			}
+		}
+	}
 	
 	// Enable so the Update function will be called
 	// if regeneration is enabled
@@ -89,27 +115,58 @@ function OnDamage (amount : float, fromDirection : Vector3) {
 		damageEffect.Emit();// (particleAmount);
 	}
 	
-	// Die if no health left
-	if (health <= 0)
-	{
-		GameScore.RegisterDeath (gameObject);
-		
-		health = 0;
-		dead = true;
-		dieSignals.SendSignals (this);
-		enabled = false;
-		
-		// scorch marks
-		if (scorchMark) {
-			scorchMark.active = true;
-			// @NOTE: maybe we can justify a raycast here so we can place the mark
-			// on slopes with proper normal alignments
-			// @TODO: spawn a yield Sub() to handle placement, as we can
-			// spread calculations over several frames => cheap in total
-			var scorchPosition : Vector3 = collider.ClosestPointOnBounds (transform.position - Vector3.up * 100);
-			scorchMark.transform.position = scorchPosition + Vector3.up * 0.1;
-			scorchMark.transform.eulerAngles.y = Random.Range (0.0, 90.0);
+	var view : PhotonView = GetComponent(typeof(PhotonView));
+	if(view.isMine && !view.isSceneView){
+		Camera.main.SendMessage("OnDamage");
+	}
+	
+	if(PhotonNetwork.isMasterClient){
+	    // Die if no health left
+	    if (health <= 0) {		
+			//if (attacker != null) {
+			//	var component = attacker.GetComponent(typeof(PhotonView));
+			//	if (component != null) {
+			//		if (component.isMine) process_kill(gameObject.name);
+			//		else Debug.Log("SOMEONE ELSE SCORED!");
+			//	}
+			//}
+	        if(view.isSceneView){
+	            view.RPC("Die", PhotonTargets.AllBuffered);
+	        }else{
+	        view.RPC("Die", PhotonTargets.All);
+	     }
 		}
+		
+		var diff : float = lastSharedHP - health;
+		if(Mathf.Abs(diff)>5){
+		    view.RPC("SetHP", PhotonTargets.Others, health);
+		}		
+	}
+}
+
+@RPC
+function SetHP(newVal : float){
+    health = newVal;
+}
+var lastSharedHP : float = 100;
+
+@RPC
+function Die(){
+	health = 0;
+	dead = true;
+	dieSignals.SendSignals (this);
+	enabled = false;
+	
+	// scorch marks
+	if (scorchMark) {
+		scorchMark.active = true;
+		// @NOTE: maybe we can justify a raycast here so we can place the mark
+		// on slopes with proper normal alignments
+		// @TODO: spawn a yield Sub() to handle placement, as we can
+		// spread calculations over several frames => cheap in total
+		var scorchPosition : Vector3 = collider.ClosestPointOnBounds (transform.position - Vector3.up * 100);
+		scorchMark.transform.position = scorchPosition + Vector3.up * 0.1;
+		scorchMark.transform.eulerAngles.y = Random.Range (0.0, 90.0);
 	}
 }
 

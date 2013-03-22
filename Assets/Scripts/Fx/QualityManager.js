@@ -67,61 +67,52 @@ function Update () {
 
 #endif
 
-private function AutoDetectQuality ()
-// Some special quality settings cases for various platforms
-{
-	#if UNITY_IPHONE
-	
-		switch (iPhoneSettings.generation)
-		{
-			case iPhoneGeneration.iPad1Gen:
-				currentQuality = Quality.Low;
-			break;
-			case iPhoneGeneration.iPad2Gen:
-				currentQuality = Quality.High;
-			break;
-			case iPhoneGeneration.iPhone3GS:
-			case iPhoneGeneration.iPodTouch3Gen:
-				currentQuality = Quality.Low;
-			break;
-			default:
-				currentQuality = Quality.Medium;
-			break;
-		}
+private function AutoDetectQuality () {
 		
-	#elif UNITY_ANDROID
+#if UNITY_IPHONE	
 
+	// some special quality settings cases for various platforms
+
+	if (iPhoneSettings.generation == iPhoneGeneration.iPad1Gen) {
 		currentQuality = Quality.Low;
-	
-	#else
-	// Desktops/consoles
-	
-		switch (Application.platform)
-		{
-			case RuntimePlatform.NaCl:
-				currentQuality = Quality.Highest;
-			break;
-			case RuntimePlatform.FlashPlayer:
-				currentQuality = Quality.Low;
-			break;
-			default:
-				currentQuality = SystemInfo.graphicsPixelFillrate < 2800 ? Quality.High : Quality.Highest;
-			break;
-		}
+		Debug.Log("AngryBots: quality set to 'Low' (iPad1 class iOS)");		
+	}
+	else if (iPhoneSettings.generation == iPhoneGeneration.iPad2Gen) {
+		currentQuality = Quality.High;
+		Debug.Log("AngryBots: quality set to 'High' (iPad2 class iOS)");		
+	}
+	else if (iPhoneSettings.generation == iPhoneGeneration.iPhone3GS || iPhoneSettings.generation == iPhoneGeneration.iPodTouch3Gen) {
+		currentQuality = Quality.Low;
+		Debug.Log("AngryBots: quality set to 'Low' (iPhone 3GS class iOS)");					
+	}
+	else {
+		currentQuality = Quality.Medium;
+		Debug.Log("AngryBots: quality set to 'Medium' (iPhone4 class iOS)");		
+	}
+		
+#else
 
-	#endif
+#if UNITY_ANDROID
 
-	Debug.Log (String.Format (
-		"AngryBots: Quality set to '{0}'{1}",
-		currentQuality,
-		#if UNITY_IPHONE
-			" (" + iPhoneSettings.generation + " class iOS)"
-		#elif UNITY_ANDROID
-			" (Android)"
-		#else
-			" (" + Application.platform + ")"
-		#endif
-	));
+	Debug.Log("AngryBots: quality set to 'Low' (current default for all Android)");	
+	currentQuality = Quality.Low;
+		
+#else
+
+	// quality for desktops/consoles
+
+	if (SystemInfo.graphicsPixelFillrate < 2800) {
+		currentQuality = Quality.High;	
+		Debug.Log("AngryBots: quality set to 'High'");		
+	}
+	else {
+		currentQuality = Quality.Highest;	
+		Debug.Log("AngryBots: quality set to 'Highest'");
+	}
+		
+#endif	
+
+#endif
 }
 
 private function ApplyAndSetQuality (newQuality : Quality) {	
@@ -129,7 +120,7 @@ private function ApplyAndSetQuality (newQuality : Quality) {
 
 	// default states
 	
-	camera.cullingMask = -1 & ~(1 << LayerMask.NameToLayer ("Adventure"));
+	camera.cullingMask = -1 && ~(1 << LayerMask.NameToLayer ("Adventure"));
 	var textAdventure : GameObject = GameObject.Find ("TextAdventure");		
 	if (textAdventure) 
 		textAdventure.GetComponent.<TextAdventureManager> ().enabled = false;
