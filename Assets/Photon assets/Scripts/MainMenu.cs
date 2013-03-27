@@ -29,6 +29,7 @@ public class MainMenu : Photon.MonoBehaviour
 
         //Load name from PlayerPrefs
         PhotonNetwork.playerName = PlayerPrefs.GetString("playerName", "Guest" + Random.Range(1, 9999));
+        PhotonNetwork.playerRoarID = "";
         Debug.Log ("GENERATED NAME = [" + PhotonNetwork.playerName + "]");
     }
 

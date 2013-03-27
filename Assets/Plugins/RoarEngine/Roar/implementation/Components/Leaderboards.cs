@@ -18,6 +18,8 @@ namespace Roar.implementation.Components
 			string,
 			IDictionary<int, IList<Roar.DomainObjects.LeaderboardEntry> >
 				> boards = new Dictionary<string, IDictionary<int, IList<Roar.DomainObjects.LeaderboardEntry>>>();
+		
+		public static System.Action<Roar.WebObjects.Leaderboards.ViewResponse> OnLeaderboardFetchCompleted;
 
 		public Leaderboards (IWebAPI webapi, IDataStore dataStore, ILogger logger)
 		{
@@ -102,6 +104,7 @@ namespace Roar.implementation.Components
 				{
 					cb( new Roar.CallbackInfo<ILeaderboards>(leaderboards,WebAPI.OK,null) );
 				}
+				Leaderboards.OnLeaderboardFetchCompleted(info.data);
 			}
 	}
 

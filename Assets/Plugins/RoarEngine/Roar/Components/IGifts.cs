@@ -43,7 +43,24 @@ namespace Roar.Components
 	     *
 	     * @returns nothing - use a callback and/or subscribe to RoarManager events for results of non-blocking calls.
 	     **/
-		void Fetch (Roar.Callback< IDictionary<string,Foo> > callback);
+		void Fetch (Roar.Callback< IDictionary<string,DomainObjects.MailPackage> > callback);
+		
+		/**
+	     * Fetch gifts information from the server.
+	     *
+	     * On success:
+	     * - invokes callback with parameter *Hastable data* containing the gifts for the user
+	     * - fires the RoarManager#giftsReadyEvent
+	     * - sets #hasDataFromServer to true
+	     *
+	     * On failure:
+	     * - invokes callback with error code and error message
+	     *
+	     * @param callback the callback function to be passed this function's result.
+	     *
+	     * @returns nothing - use a callback and/or subscribe to RoarManager events for results of non-blocking calls.
+	     **/
+		void FetchSendable (Roar.Callback< IDictionary<string,DomainObjects.Mailable> > callback);
 
 		/**
 	     * Check whether any user gifts data has been obtained from the server.
@@ -62,7 +79,7 @@ namespace Roar.Components
 	     *       is called prior to the successful completion of a #fetch call,
 	     *       it will return an empty array.
 	     **/
-		IList<Foo> List ();
+		IList<DomainObjects.MailPackage> List ();
 
 
 		/**
@@ -73,7 +90,11 @@ namespace Roar.Components
 	     * @returns the gift Hashtable associated with the *id*
 	     *          or null if the gift does not exist in the data store.
 	     **/
-		Foo GetGift (string id);
-
+		DomainObjects.MailPackage get (string id);
+		
+		void AcceptGift (string gift_id, Roar.Callback<WebObjects.Mail.AcceptResponse> callback);
+		void SendGift (string recipient_id, string mailable_id, string message, Roar.Callback<WebObjects.Mail.SendResponse> callback);
+		void ListAcceptableGifts (Roar.Callback<WebObjects.Mail.WhatCanIAcceptResponse> callback);
+		void ListSendableGifts (Roar.Callback<WebObjects.Mail.WhatCanISendResponse> callback);
 	}
 }

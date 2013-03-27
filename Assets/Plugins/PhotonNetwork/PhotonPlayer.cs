@@ -35,6 +35,7 @@ public class PhotonPlayer
     private int actorID = -1;
 
     private string nameField = "";
+    private string roaridField = "";
 
     /// <summary>Nickname of this player.</summary>
     public string name {
@@ -52,6 +53,14 @@ public class PhotonPlayer
 
             this.nameField = value;
         }
+    }
+    
+    public string roarid {
+    	get {return this.roaridField;}
+    	set {
+    		if (!isLocal) {Debug.LogError("Error: Cannot change the roar id of a remote player!"); return;}
+    		this.roaridField = value;
+    	}
     }
 
     /// <summary>Only one player is controlled by each client. Others are not local.</summary>
@@ -77,6 +86,7 @@ public class PhotonPlayer
             Hashtable allProps = new Hashtable();
             allProps.Merge(this.customProperties);
             allProps[ActorProperties.PlayerName] = this.name;
+            allProps[ActorProperties.PlayerRoarID] = this.roarid;
             return allProps;
         }
     }
@@ -120,6 +130,12 @@ public class PhotonPlayer
         if (properties.ContainsKey(ActorProperties.PlayerName))
         {
             this.nameField = (string)properties[ActorProperties.PlayerName];
+            Debug.Log("UGH [" + this.nameField + "]");
+        }
+        if (properties.ContainsKey(ActorProperties.PlayerRoarID))
+        {
+        	this.roaridField = (string)properties[ActorProperties.PlayerRoarID];
+        	Debug.Log("UGHH [" + this.roaridField + "]");
         }
 
         this.customProperties.MergeStringKeys(properties);

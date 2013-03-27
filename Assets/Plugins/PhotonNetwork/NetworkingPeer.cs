@@ -28,6 +28,8 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
     private string masterServerAddress;
 
     private string playername = "";
+    
+    private string playerroarid = "";
 
     private IPhotonPeerListener externalListener;
 
@@ -55,6 +57,34 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             }
 
             this.playername = value;
+            if (this.mCurrentGame != null)
+            {
+                // Only when in a room
+                this.SendPlayerName();
+            }
+        }
+    }
+
+    public string PlayerRoarID
+    {
+        get
+        {
+            return this.playerroarid;
+        }
+
+        set
+        {
+            if (string.IsNullOrEmpty(value) || value.Equals(this.playerroarid))
+            {
+                return;
+            }
+
+            if (this.mLocalActor != null)
+            {
+                this.mLocalActor.roarid = value;
+            }
+
+            this.playerroarid = value;
             if (this.mCurrentGame != null)
             {
                 // Only when in a room
@@ -355,6 +385,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
                     actorNr = (int)key;
                     props = (Hashtable)pActorProperties[key];
                     newName = (string)props[ActorProperties.PlayerName];
+                    Debug.Log ("RECEIVED NEW NAME [" + newName + "]");
 
                     target = this.GetPlayerWithID(actorNr);
                     if (target == null)
@@ -537,8 +568,10 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
             this.mLocalActor.name = this.PlayerName;
             Hashtable properties = new Hashtable();
             properties[ActorProperties.PlayerName] = this.PlayerName;
+            properties[ActorProperties.PlayerRoarID] = this.PlayerRoarID;
             this.OpSetPropertiesOfActor(this.mLocalActor.ID, properties, true, (byte)0);
             this.mPlayernameHasToBeUpdated = false;
+            Debug.Log ("SENDING PLAYER'S NAME [" + this.PlayerName + "] with ID [" + this.PlayerRoarID + "]");
         }
     }
 
@@ -613,6 +646,7 @@ internal class NetworkingPeer : LoadbalancingPeer, IPhotonPeerListener
 
         Hashtable actorProperties = new Hashtable();
         actorProperties[ActorProperties.PlayerName] = this.PlayerName;
+        actorProperties[ActorProperties.PlayerRoarID] = this.PlayerRoarID;
         return actorProperties;
     }
 

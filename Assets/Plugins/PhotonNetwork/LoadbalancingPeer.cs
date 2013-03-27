@@ -395,6 +395,7 @@ public class ActorProperties
 {
     /// <summary>(255) Name of a player/actor.</summary>
     public const byte PlayerName = 255; // was: 1
+    public const byte PlayerRoarID = 71;
 }
 
 /// <summary>

@@ -250,6 +250,10 @@ namespace Roar
 			{
 				public int required;
 			}
+			
+			public class And : Requirement
+			{
+			}
 		}
 		
 		namespace ItemStats

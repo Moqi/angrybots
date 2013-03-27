@@ -348,6 +348,10 @@ namespace Roar.DataConversion
 				}
 				retval = friends;
 				break;
+			case "and":
+				DomainObjects.Requirements.And and = new DomainObjects.Requirements.And();
+				retval = and;
+				break;
 			case "true_requirement":
 				retval = new DomainObjects.Requirements.True();
 				break;

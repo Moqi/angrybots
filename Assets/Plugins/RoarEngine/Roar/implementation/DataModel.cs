@@ -249,8 +249,12 @@ public class DataModel<CT,DT> : IDataModel<CT,DT> where DT:class
 
 	public CT RawGet(string key)
 	{
+		Debug.Log("========= TRYING TO GET KEY [" + key + "]");
 		if(!HasDataFromServer) { return default(CT); }
-		return this.attributes[key];
+		if (attributes.ContainsKey(key)) {
+			return this.attributes[key];
+		}
+		return default(CT);
 	}
 
 	// Returns the value of a given data key (usually an object)

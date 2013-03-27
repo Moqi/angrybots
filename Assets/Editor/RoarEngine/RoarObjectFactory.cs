@@ -327,6 +327,56 @@ public class RoarObjectFactory : Editor
 
 		Selection.activeGameObject = go;
 	}
+	
+	[MenuItem("GameObject/Create Other/Roar/Profile Viewer", false, 2012)]
+	public static void CreateRoarProfileViewerObject()
+	{
+		if (!ExistingComponentTypeExists(typeof(DefaultRoar)))
+		{
+			if (EditorUtility.DisplayDialog("Sorry!", "A DefaultRoar system component cannot be found in this scene. Add one now?", "OK", "Later"))
+			{
+				CreateRoarSceneObject();
+				_CreateRoarProfileViewerObject();
+			}
+		}
+		else
+		{
+			_CreateRoarProfileViewerObject();
+		}
+	}
+
+	private static void _CreateRoarProfileViewerObject()
+	{
+		GameObject go = RoarObjectFactory.CreateGameObjectInScene("ProfileViewerWidget");
+		go.AddComponent<RoarProfileViewerWidget>();
+
+		Selection.activeGameObject = go;
+	}
+	
+	[MenuItem("GameObject/Create Other/Roar/Player Picker", false, 2013)]
+	public static void CreateRoarPlayerPickerObject()
+	{
+		if (!ExistingComponentTypeExists(typeof(DefaultRoar)))
+		{
+			if (EditorUtility.DisplayDialog("Sorry!", "A DefaultRoar system component cannot be found in this scene. Add one now?", "OK", "Later"))
+			{
+				CreateRoarSceneObject();
+				_CreateRoarPlayerPickerObject();
+			}
+		}
+		else
+		{
+			_CreateRoarPlayerPickerObject();
+		}
+	}
+
+	private static void _CreateRoarPlayerPickerObject()
+	{
+		GameObject go = RoarObjectFactory.CreateGameObjectInScene("PlayerSelectionWidget");
+		go.AddComponent<RoarPlayerSelectionWidget>();
+
+		Selection.activeGameObject = go;
+	}
 
 	public static bool ExistingComponentTypeExists(System.Type type)
 	{

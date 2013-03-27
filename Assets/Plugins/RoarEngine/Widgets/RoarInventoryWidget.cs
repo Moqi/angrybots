@@ -15,6 +15,7 @@ public class RoarInventoryWidget : RoarUIWidget
 	public string descriptionFormat = "DefaultLightContentText";
 	public string typeFormat = "DefaultHeavyContentLeftText";
 	public string consumeButtonFormat = "DefaultButton";
+	public float consumeButtonWidth = 100;
 	
 	public bool showDescription = true;
 	public bool showType = true;
@@ -101,6 +102,7 @@ public class RoarInventoryWidget : RoarUIWidget
 		rect.x += rect.width+ margin;
 		
 		lastLabelSize =GUI.skin.FindStyle(consumeButtonFormat).CalcSize(new GUIContent("Consume"));
+		rect.width += lastLabelSize.x;
 		rect.width = lastLabelSize.x;
 		
 		rect.x = margin;
@@ -135,6 +137,12 @@ public class RoarInventoryWidget : RoarUIWidget
 				
 			GUI.Label ( rect, item.type, typeFormat);
 			rect.x += rect.width+ margin;
+			rect.width = consumeButtonWidth;
+
+			if(item.consumable && GUI.Button(rect, "Consume", consumeButtonFormat))
+			{
+				inventory.Use(item.id, OnRoarInventoryConsumeComplete);
+			}
 			
 			rect.x = margin;
 			rect.y += rowHeight;
@@ -154,9 +162,17 @@ public class RoarInventoryWidget : RoarUIWidget
 		isFetching = false;
 	}
 	
+	void OnRoarInventoryConsumeComplete(Roar.CallbackInfo<Roar.WebObjects.Items.UseResponse> data)
+	{
+		networkActionInProgress = false;
+		if(data.code == WebAPI.OK)
+		{
+			Fetch();
+		}
+	}
+	
 	// Use this for initialization
 	void Start () {
-	
 	}
 	
 	// Update is called once per frame

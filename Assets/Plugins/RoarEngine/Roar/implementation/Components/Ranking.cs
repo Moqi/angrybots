@@ -25,7 +25,7 @@ namespace Roar.implementation.Components
 			set { page = value; }
 		}
 
-		public void Fetch(Roar.Callback< IDictionary<string,Foo> > callback)
+		public void Fetch(Roar.Callback< IDictionary<string,DomainObjects.LeaderboardData> > callback)
 		{
 			Hashtable data = new Hashtable();
 			data.Add("board_id", boardId);
@@ -35,13 +35,13 @@ namespace Roar.implementation.Components
 
 		public bool HasDataFromServer { get { return dataStore.ranking.HasDataFromServer; } }
 
-		public IList<Foo> List()
+		public IList<DomainObjects.LeaderboardData> List()
 		{
 			return dataStore.ranking.List();
 		}
 
 		// Returns the ranking Hashtable associated with attribute `ikey`
-		public Foo GetEntry( string ikey )
+		public DomainObjects.LeaderboardData GetEntry( string ikey )
 		{
 			return dataStore.ranking.Get(ikey);
 		}

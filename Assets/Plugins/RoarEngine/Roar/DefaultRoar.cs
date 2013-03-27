@@ -151,6 +151,7 @@ public class DefaultRoar : MonoBehaviour, IRoar, IUnityObject
 		data = new Roar.implementation.Components.Data( webAPI.user, datastore, logger);
 		shop = new Roar.implementation.Components.Shop( webAPI.shop, datastore, logger );
 		tasks = new Roar.implementation.Components.Tasks( webAPI.tasks, datastore );
+		gifts = new Roar.implementation.Components.Gifts(webAPI.mail, datastore, logger);
 		facebook = new Roar.implementation.Components.Facebook(webAPI.facebook, datastore, logger);
 
 		if (!Application.isEditor)

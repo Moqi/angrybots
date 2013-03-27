@@ -385,7 +385,7 @@ namespace Roar.DataConversion.Responses
 
 					invite.invite_id = invite_node.GetAttribute("invite_id");
 					invite.player_id = invite_node.GetAttribute("from_player_id");
-					invite.player_name = invite_node.GetAttribute("from_player");
+					invite.player_name = invite_node.GetAttribute("from_player_name");
 					invite.message = invite_node.GetAttribute("message");
 					
 					retval.invites.Add(invite);

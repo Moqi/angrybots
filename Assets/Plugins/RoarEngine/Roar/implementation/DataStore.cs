@@ -97,6 +97,41 @@ public class FacebookShopListToFacebookShop : IDomToCache<Roar.WebObjects.Facebo
 	}
 }
 
+public class LeaderboardViewToLeaderboardData : IDomToCache<Roar.WebObjects.Leaderboards.ViewResponse, Roar.DomainObjects.LeaderboardData>
+{
+	public Dictionary<string, Roar.DomainObjects.LeaderboardData> convert( Roar.WebObjects.Leaderboards.ViewResponse d)
+	{
+		Dictionary<string,Roar.DomainObjects.LeaderboardData> retval = new Dictionary<string, Roar.DomainObjects.LeaderboardData>();
+		return retval;
+	}
+}
+
+public class MailAcceptResponseToAcceptableMails : IDomToCache<Roar.WebObjects.Mail.WhatCanIAcceptResponse,Roar.DomainObjects.MailPackage>
+{
+	public Dictionary<string, Roar.DomainObjects.MailPackage> convert( Roar.WebObjects.Mail.WhatCanIAcceptResponse d)
+	{
+		Dictionary<string,Roar.DomainObjects.MailPackage> retval = new Dictionary<string, Roar.DomainObjects.MailPackage>();
+		foreach( Roar.DomainObjects.MailPackage x in d.packages )
+		{
+			retval[x.id] = x;
+		}
+		return retval;
+	}
+}
+
+public class MailSendResponseToMailable : IDomToCache<Roar.WebObjects.Mail.WhatCanISendResponse,Roar.DomainObjects.Mailable>
+{
+	public Dictionary<string, Roar.DomainObjects.Mailable> convert( Roar.WebObjects.Mail.WhatCanISendResponse d)
+	{
+		Dictionary<string,Roar.DomainObjects.Mailable> retval = new Dictionary<string, Roar.DomainObjects.Mailable>();
+		foreach( Roar.DomainObjects.Mailable x in d.mailables )
+		{
+			retval[x.id] = x;
+		}
+		return retval;
+	}
+}
+
 public class FooToFoo : IDomToCache<Foo,Foo>
 {
 	public Dictionary<string, Foo> convert( Foo d)
@@ -154,6 +189,11 @@ public class FriendsListGetter : GenericGetter<Roar.WebObjects.Friends.ListRespo
 	public FriendsListGetter( IWebAPI api ) : base( api.friends.list ) {}
 }
 
+public class LeaderboardViewGetter : GenericGetter<Roar.WebObjects.Leaderboards.ViewResponse, Roar.WebObjects.Leaderboards.ViewArguments>
+{
+	public LeaderboardViewGetter( IWebAPI api ) : base( api.leaderboards.view) {}
+}
+
 public class ItemsViewGetter : GenericGetter<Roar.WebObjects.Items.ViewResponse, Roar.WebObjects.Items.ViewArguments>
 {
 	public ItemsViewGetter( IWebAPI api ) : base( api.items.view ) {}
@@ -167,6 +207,16 @@ public class TasksListGetter : GenericGetter<Roar.WebObjects.Tasks.ListResponse,
 public class FacebookShopListGetter : GenericGetter<Roar.WebObjects.Facebook.ShopListResponse, Roar.WebObjects.Facebook.ShopListArguments>
 {
 	public FacebookShopListGetter( IWebAPI api ) : base( api.facebook.shop_list ) {}
+}
+
+public class GiftsAcceptableGetter : GenericGetter<Roar.WebObjects.Mail.WhatCanIAcceptResponse, Roar.WebObjects.Mail.WhatCanIAcceptArguments>
+{
+	public GiftsAcceptableGetter( IWebAPI api ) : base( api.mail.what_can_i_accept ) {}
+}
+
+public class GiftsSendableGetter : GenericGetter<Roar.WebObjects.Mail.WhatCanISendResponse, Roar.WebObjects.Mail.WhatCanISendArguments>
+{
+	public GiftsSendableGetter( IWebAPI api ) : base( api.mail.what_can_i_send ) {}
 }
 
 public class FooGetter : IDomGetter<Foo>
@@ -195,9 +245,10 @@ namespace Roar.implementation
 		IDataModel<DomainObjects.ShopEntry,Roar.WebObjects.Shop.ListResponse> shop { get; }
 		IDataModel<DomainObjects.Task,WebObjects.Tasks.ListResponse> actions { get; }
 		IDataModel<DomainObjects.FacebookShopEntry,WebObjects.Facebook.ShopListResponse> facebookShop {get;}
-		IDataModel<Foo,Foo> gifts { get; }
+		IDataModel<DomainObjects.MailPackage,WebObjects.Mail.WhatCanIAcceptResponse> giftsAcceptable { get; }
+		IDataModel<DomainObjects.Mailable,WebObjects.Mail.WhatCanISendResponse> giftsSendable { get; }
 		IDataModel<Foo,Foo> achievements { get; }
-		IDataModel<Foo,Foo> ranking { get; }
+		IDataModel<DomainObjects.LeaderboardData,WebObjects.Leaderboards.ViewResponse> ranking { get; }
 		IDataModel<DomainObjects.Friend,WebObjects.Friends.ListResponse> friends { get; }
 		IDataModel<Foo,Foo> appStore { get; }
 		IItemCache cache { get; }
@@ -215,9 +266,10 @@ namespace Roar.implementation
 			shop_ = new DataModel<DomainObjects.ShopEntry,WebObjects.Shop.ListResponse>("shop", new ShopListGetter(webapi), new ShopListToShopEntry(), logger);
 			actions_ = new DataModel<DomainObjects.Task,WebObjects.Tasks.ListResponse> ("tasks", new TasksListGetter(webapi), new TaskListToTask(), logger);
 			facebookShop_ = new DataModel<DomainObjects.FacebookShopEntry, WebObjects.Facebook.ShopListResponse>("facebook", new FacebookShopListGetter(webapi), new FacebookShopListToFacebookShop(), logger);
-			gifts_ = new DataModel<Foo,Foo> ("gifts", new FooGetter(webapi), new FooToFoo(), logger);
+			giftsAcceptable_ = new DataModel<DomainObjects.MailPackage, WebObjects.Mail.WhatCanIAcceptResponse>("giftsAcceptable", new GiftsAcceptableGetter(webapi), new MailAcceptResponseToAcceptableMails(), logger);
+			giftsSendable_ = new DataModel<DomainObjects.Mailable, WebObjects.Mail.WhatCanISendResponse>("giftsSendable", new GiftsSendableGetter(webapi), new MailSendResponseToMailable(), logger);
 			achievements_ = new DataModel<Foo,Foo> ("achievements", new FooGetter(webapi), new FooToFoo(), logger);
-			ranking_ = new DataModel<Foo,Foo> ("ranking", new FooGetter(webapi), new FooToFoo(), logger);
+			ranking_ = new DataModel<DomainObjects.LeaderboardData,WebObjects.Leaderboards.ViewResponse> ("ranking", new LeaderboardViewGetter(webapi), new LeaderboardViewToLeaderboardData(), logger);
 			friends_ = new DataModel<DomainObjects.Friend,WebObjects.Friends.ListResponse> ("friends",  new FriendsListGetter(webapi), new FriendsListToFriend(), logger);
 			cache_ = new ItemCache ("cache", new ItemsViewGetter(webapi), new ItemsViewToItemPrototype(), logger);
 			appStore_ = new DataModel<Foo,Foo> ("appstore", new FooGetter(webapi), new FooToFoo(), logger);
@@ -230,7 +282,7 @@ namespace Roar.implementation
 			shop.Clear (x);
 			actions.Clear (x);
 			facebookShop.Clear(x);
-			gifts.Clear (x);
+			giftsAcceptable.Clear (x);
 			achievements.Clear (x);
 			ranking.Clear (x);
 			friends.Clear (x);
@@ -245,9 +297,10 @@ namespace Roar.implementation
 		public IDataModel<DomainObjects.ShopEntry,Roar.WebObjects.Shop.ListResponse> shop { get { return shop_; } }
 		public IDataModel<DomainObjects.Task,WebObjects.Tasks.ListResponse> actions { get { return actions_; } }
 		public IDataModel<DomainObjects.FacebookShopEntry, WebObjects.Facebook.ShopListResponse> facebookShop {get {return facebookShop_;}}
-		public IDataModel<Foo,Foo> gifts { get { return gifts_; } }
+		public IDataModel<DomainObjects.MailPackage,WebObjects.Mail.WhatCanIAcceptResponse> giftsAcceptable { get { return giftsAcceptable_; } }
+		public IDataModel<DomainObjects.Mailable,WebObjects.Mail.WhatCanISendResponse> giftsSendable { get { return giftsSendable_; } }
 		public IDataModel<Foo,Foo> achievements { get { return achievements_; } }
-		public IDataModel<Foo,Foo> ranking { get { return ranking_; } }
+		public IDataModel<DomainObjects.LeaderboardData,WebObjects.Leaderboards.ViewResponse> ranking { get { return ranking_; } }
 		public IDataModel<DomainObjects.Friend,WebObjects.Friends.ListResponse> friends { get { return friends_; } }
 		public IDataModel<Foo,Foo> appStore { get { return appStore_; } }
 		public IItemCache cache { get { return cache_; } }
@@ -257,9 +310,10 @@ namespace Roar.implementation
 		public DataModel<DomainObjects.ShopEntry,Roar.WebObjects.Shop.ListResponse> shop_;
 		public DataModel<DomainObjects.Task,WebObjects.Tasks.ListResponse> actions_;
 		public DataModel<DomainObjects.FacebookShopEntry, WebObjects.Facebook.ShopListResponse> facebookShop_;
-		public DataModel<Foo,Foo> gifts_;
+		public DataModel<DomainObjects.MailPackage,WebObjects.Mail.WhatCanIAcceptResponse> giftsAcceptable_;
+		public DataModel<DomainObjects.Mailable,WebObjects.Mail.WhatCanISendResponse> giftsSendable_;
 		public DataModel<Foo,Foo> achievements_;
-		public DataModel<Foo,Foo> ranking_;
+		public DataModel<DomainObjects.LeaderboardData,WebObjects.Leaderboards.ViewResponse> ranking_;
 		public DataModel<DomainObjects.Friend,WebObjects.Friends.ListResponse> friends_;
 		public DataModel<Foo,Foo> appStore_;
 		public ItemCache cache_;
