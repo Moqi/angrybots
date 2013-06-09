@@ -1,18 +1,19 @@
 #pragma strict
 
+class AI extends Photon.MonoBehaviour {
+
 // Public member data
 public var behaviourOnSpotted : MonoBehaviour;
 public var soundOnSpotted : AudioClip;
 public var behaviourOnLostTrack : MonoBehaviour;
 
-// Private memeber data
+// Private member data
 private var character : Transform;
-private var player : Transform;
 private var insideInterestArea : boolean = true;
 
-function Awake () {
+function Awake () {          
 	character = transform;
-	player = GameObject.FindWithTag ("Player").transform;
+        
 }
 
 function OnEnable () {
@@ -21,7 +22,7 @@ function OnEnable () {
 }
 
 function OnTriggerEnter (other : Collider) {
-	if (other.transform == player && CanSeePlayer ()) {
+	if (other.tag == "Player" && CanSeePlayer ()) {
 		OnSpotted ();
 	}
 }
@@ -50,6 +51,9 @@ function OnSpotted () {
 }
 
 function OnLostTrack () {
+    //if(photonView.isMine){
+    //    photonView.RPC("OnLostTrack",  PhotonTargets.Others);
+    //}
 	if (!behaviourOnLostTrack.enabled) {
 		behaviourOnLostTrack.enabled = true;
 		behaviourOnSpotted.enabled = false;
@@ -57,11 +61,19 @@ function OnLostTrack () {
 }
 
 function CanSeePlayer () : boolean {
+	var player : Transform = GameManager.GetClosestPlayer(transform.position);
+	if(player == null){
+		Debug.LogError("No player!");
+		return false;
+	}
+	
 	var playerDirection : Vector3 = (player.position - character.position);
 	var hit : RaycastHit;
-	Physics.Raycast (character.position, playerDirection, hit, playerDirection.magnitude);
+	Physics.Raycast (character.position, playerDirection, hit, playerDirection.magnitude);	
 	if (hit.collider && hit.collider.transform == player) {
 		return true;
 	}
 	return false;
+}
+
 }

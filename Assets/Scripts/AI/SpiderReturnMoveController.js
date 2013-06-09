@@ -22,7 +22,7 @@ function Update () {
 	if (motor.movementDirection.sqrMagnitude > 1)
 		motor.movementDirection = motor.movementDirection.normalized;
 	
-	if (motor.movementDirection.sqrMagnitude < 0.01) {
+	if (motor.movementDirection.sqrMagnitude < 0.05) {
 		character.position = new Vector3 (spawnPos.x, character.position.y, spawnPos.z);
 		motor.rigidbody.velocity = Vector3.zero;
 		motor.rigidbody.angularVelocity = Vector3.zero;

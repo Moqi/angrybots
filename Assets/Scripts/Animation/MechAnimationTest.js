@@ -1,7 +1,5 @@
 #pragma strict
 
-#if !UNITY_FLASH
-
 var turning : float = 0;
 var walking : float = 0;
 var turnOffset : float = 0.0;
@@ -75,4 +73,3 @@ function OnGUI () {
 	if (Mathf.Abs (turnOffset) < 0.05)
 		turnOffset = 0;
 }
-#endif

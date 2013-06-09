@@ -4,7 +4,8 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - objectFocus: {instanceID: 0}
-  - dofBlurShader: {fileID: 4800000, guid: ab079e63059f340088f6b9c0e209bee1, type: 1}
-  - dofShader: {fileID: 4800000, guid: c8cc60236143f4ec59b76421156c9eda, type: 1}
+  - dofBlurShader: {fileID: 4800000, guid: ab079e63059f340088f6b9c0e209bee1, type: 3}
+  - dofShader: {fileID: 4800000, guid: c8cc60236143f4ec59b76421156c9eda, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
+  userData: 

@@ -39,6 +39,12 @@ private var screenMovementSpace : Quaternion;
 private var screenMovementForward : Vector3;
 private var screenMovementRight : Vector3;
 
+
+function IsLocalPlayer(val : boolean ){
+	this.enabled = val;
+
+}
+
 function Awake () {		
 	motor.movementDirection = Vector2.zero;
 	motor.facingDirection = Vector2.zero;
@@ -54,23 +60,6 @@ function Awake () {
 	
 	initOffsetToPlayer = mainCameraTransform.position - character.position;
 	
-	#if UNITY_IPHONE || UNITY_ANDROID
-		if (joystickPrefab) {
-			// Create left joystick
-			var joystickLeftGO : GameObject = Instantiate (joystickPrefab) as GameObject;
-			joystickLeftGO.name = "Joystick Left";
-			joystickLeft = joystickLeftGO.GetComponent.<Joystick> ();
-			
-			// Create right joystick
-			joystickRightGO = Instantiate (joystickPrefab) as GameObject;
-			joystickRightGO.name = "Joystick Right";
-			joystickRight = joystickRightGO.GetComponent.<Joystick> ();			
-		}
-	#elif !UNITY_FLASH
-		if (cursorPrefab) {
-			cursorObject = (Instantiate (cursorPrefab) as GameObject).transform;
-		}
-	#endif
 	
 	// Save camera offset so we can use it in the first frame
 	cameraOffset = mainCameraTransform.position - character.position;
@@ -83,11 +72,33 @@ function Awake () {
 }
 
 function Start () {
+	
+	if(GetComponent(typeof(PhotonView)).isMine){
+
 	#if UNITY_IPHONE || UNITY_ANDROID
+		if (joystickPrefab) {
+			// Create left joystick
+			var joystickLeftGO : GameObject = Instantiate (joystickPrefab) as GameObject;
+			joystickLeftGO.name = "Joystick Left";
+			joystickLeft = joystickLeftGO.GetComponent.<Joystick> ();
+			
+			// Create right joystick
+			joystickRightGO = Instantiate (joystickPrefab) as GameObject;
+			joystickRightGO.name = "Joystick Right";
+			joystickRight = joystickRightGO.GetComponent.<Joystick> ();			
+		}
+	#else
+		if (cursorPrefab) {
+			cursorObject = (Instantiate (cursorPrefab) as GameObject).transform;
+		}
+	#endif
+	}
+	
+	if(joystickRightGO!=null){
 		// Move to right side of screen
 		var guiTex : GUITexture = joystickRightGO.GetComponent.<GUITexture> ();
 		guiTex.pixelInset.x = Screen.width - guiTex.pixelInset.x - guiTex.pixelInset.width;			
-	#endif	
+	}
 	
 	// it's fine to calculate this on Start () as the camera is static in rotation
 	
@@ -96,7 +107,7 @@ function Start () {
 	screenMovementRight = screenMovementSpace * Vector3.right;	
 }
 
-function OnDisable () {
+function OnDisable (){ 
 	if (joystickLeft) 
 		joystickLeft.enabled = false;
 	
@@ -228,10 +239,8 @@ function HandleCursorAlignment (cursorWorldPosition : Vector3) {
 	// Set the position of the cursor object
 	cursorObject.position = cursorWorldPosition;
 	
-	#if !UNITY_FLASH
-		// Hide mouse cursor when within screen area, since we're showing game cursor instead
-		Screen.showCursor = (Input.mousePosition.x < 0 || Input.mousePosition.x > Screen.width || Input.mousePosition.y < 0 || Input.mousePosition.y > Screen.height);
-	#endif
+	// Hide mouse cursor when within screen area, since we're showing game cursor instead
+	Screen.showCursor = (Input.mousePosition.x < 0 || Input.mousePosition.x > Screen.width || Input.mousePosition.y < 0 || Input.mousePosition.y > Screen.height);
 	
 	
 	// HANDLE CURSOR ROTATION

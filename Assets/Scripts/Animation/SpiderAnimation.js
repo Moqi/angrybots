@@ -43,7 +43,7 @@ function OnDisable () {
 	animation[activateAnim.name].weight = 1;
 	animation[activateAnim.name].normalizedTime = 1;
 	animation[activateAnim.name].speed = -1;
-	animation.CrossFade (activateAnim.name, 0.3, PlayMode.StopAll);
+	//animation.CrossFade (activateAnim.name, 0.3, PlayMode.StopAll);
 }
 
 function Update () {
@@ -61,6 +61,7 @@ function Update () {
 		HorizontalAngle (tr.forward),
 		HorizontalAngle (direction)
 	);
+	
 	
 	if (walkWeight > 0.01) {
 		var w : float;

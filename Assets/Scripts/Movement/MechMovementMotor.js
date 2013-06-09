@@ -15,6 +15,12 @@ class MechMovementMotor extends MovementMotor {
 	private var facingInRightDirection : boolean = false;
 	private var headRotation : Quaternion = Quaternion.identity;
 	
+	
+	 function OnPhotonSerializeView (stream : PhotonStream,  info : PhotonMessageInfo)    
+    {
+        OnPhotonSerializeViewBase(stream, info);
+    }
+
 	function FixedUpdate () {
 		var adjustedMovementDirection : Vector3 = movementDirection;
 		

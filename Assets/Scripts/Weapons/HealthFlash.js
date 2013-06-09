@@ -7,9 +7,18 @@ public var healthMaterial : Material;
 private var healthBlink : float = 1.0f;
 private var oneOverMaxHealth : float = 0.5f;
 
+function Awake(){
+    var smr : SkinnedMeshRenderer = transform.GetComponentInChildren(typeof(SkinnedMeshRenderer));
+    
+    healthMaterial = smr.materials[1];
+}
+
 function Start () {
 	oneOverMaxHealth = 1.0f / playerHealth.maxHealth;	
 }
+
+
+
 
 function Update () {
 	var relativeHealth : float = playerHealth.health * oneOverMaxHealth;

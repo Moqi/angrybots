@@ -4,7 +4,7 @@
 @script RequireComponent (BoxCollider)
 
 public var timeToTriggerLevelEnd : float = 2.0f;
-public var endSceneName : String = "3-4_Pain";
+private var endSceneName : String = "EndScene";
 
 
 function OnTriggerEnter (other : Collider) {
@@ -33,7 +33,7 @@ function OnTriggerEnter (other : Collider) {
 		
 		yield WaitForSeconds (2.0);
 		
-		Application.LoadLevel (endSceneName);
+		Application.LoadLevel (Application.loadedLevel + 1);
 	}
 }
 

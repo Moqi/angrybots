@@ -1,5 +1,7 @@
 #pragma strict
 
+class SpiderAttackMoveController extends Photon.MonoBehaviour{ 
+
 // Public member data
 public var motor : MovementMotor;
 
@@ -34,7 +36,6 @@ private var noticeTime : float = 0;
 
 function Awake () {
 	character = motor.transform;
-	player = GameObject.FindWithTag ("Player").transform;
 	ai = transform.parent.GetComponentInChildren.<AI> ();
 	if (!blinkComponents.Length)
 		blinkComponents = transform.parent.GetComponentsInChildren.<SelfIlluminationBlink> ();
@@ -65,6 +66,12 @@ function Update () {
 	if (Time.time < noticeTime + 0.7) {
 		motor.movementDirection = Vector3.zero;
 		return;
+	}
+	
+	player = GameManager.GetClosestPlayer(transform.position);
+	if(player==null) {
+		Debug.LogError("Wrrong");
+	    return;
 	}
 	
 	// Calculate the direction from the player to this character
@@ -125,15 +132,35 @@ function Update () {
 	}
 }
 
+
+@RPC
 function Explode () {
-	var damageFraction : float = 1 - (Vector3.Distance (player.position, character.position) / damageRadius);
-	
-	var targetHealth : Health = player.GetComponent.<Health> ();
-	if (targetHealth) {
-		// Apply damage
-		targetHealth.OnDamage (damageAmount * damageFraction, character.position - player.position);
+	if(photonView.isMine){
+        photonView.RPC("Explode",  PhotonTargets.OthersBuffered);
+    }
+    if(character==null){
+    	//Destroyed in game awake (joined in the game late)
+    	return;
+    }
+    
+    if(player == null) player = GameManager.GetClosestPlayer(transform.position);
+    
+    if(player!=null){
+	    var damageFraction : float = 1 - (Vector3.Distance (player.position, character.position) / damageRadius);
+		
+		if(photonView.isMine){
+			var targetHealth : Health = player.GetComponent.<Health> ();
+			if (targetHealth) {
+				// Apply damage
+				targetHealth.OnDamage (damageAmount * damageFraction, character.position - player.position, null);
+			}
+		}
+		
+		player.rigidbody.AddExplosionForce (10, character.position, damageRadius, 0.0, ForceMode.Impulse);
 	}
-	player.rigidbody.AddExplosionForce (10, character.position, damageRadius, 0.0, ForceMode.Impulse);
 	Spawner.Spawn (intentionalExplosion, transform.position, Quaternion.identity);
 	Spawner.Destroy (character.gameObject);
+}
+
+
 }

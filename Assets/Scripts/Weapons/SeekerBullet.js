@@ -55,7 +55,7 @@ function Update () {
 		var targetHealth : Health = c.GetComponent.<Health> ();
 		if (targetHealth) {
 			// Apply damage
-			targetHealth.OnDamage (damageAmount, -tr.forward);
+			targetHealth.OnDamage (damageAmount, -tr.forward, null);
 		}
 		// Get the rigidbody if any
 		if (c.rigidbody) {

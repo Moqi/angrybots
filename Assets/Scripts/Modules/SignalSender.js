@@ -24,7 +24,10 @@ class SignalSender {
 	public function SendSignals (sender : MonoBehaviour) {
 		if (hasFired == false || onlyOnce == false) {
 			for (var i = 0; i < receivers.length; i++) {
-				sender.StartCoroutine (receivers[i].SendWithDelay(sender));
+				if(sender.gameObject.active)
+					sender.StartCoroutine (receivers[i].SendWithDelay(sender));
+				else
+					Debug.LogWarning("Could not start "+receivers[i].action+" on "+receivers[i].receiver+" since the GO is inactive.");
 			}
 			hasFired = true;
 		}

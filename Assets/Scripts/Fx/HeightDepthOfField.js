@@ -41,6 +41,11 @@ private var cameraFar : float = 50.0f;
 private var cameraFov : float = 60.0f;	
 private var cameraAspect : float = 1.333333f;
 
+
+public function SetLocalPlayerTransform(tra : Transform){
+	objectFocus = tra;
+}
+
 function Start () {
 	FindShaders ();
 	CheckSupport ();

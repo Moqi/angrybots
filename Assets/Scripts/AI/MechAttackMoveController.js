@@ -11,7 +11,7 @@ public var weaponBehaviours : MonoBehaviour[];
 public var fireFrequency : float = 2;
 
 // Private memeber data
-private var ai : AI;
+public var ai : AI;
 
 private var character : Transform;
 
@@ -28,9 +28,11 @@ private var nextWeaponToFire : int = 0;
 
 function Awake () {
 	character = motor.transform;
-	player = GameObject.FindWithTag ("Player").transform;
-	ai = transform.parent.GetComponentInChildren.<AI> ();
+	
+	if(ai==null)
+	Debug.LogError("NULLref on Mech AI");
 }
+
 
 function OnEnable () {
 	inRange = false;
@@ -56,6 +58,8 @@ function Fire () {
 }
 
 function Update () {
+player = GameManager.GetClosestPlayer(character.position);
+if(player==null) return;
 	// Calculate the direction from the player to this character
 	var playerDirection : Vector3 = (player.position - character.position);
 	playerDirection.y = 0;
@@ -108,6 +112,7 @@ function Update () {
 }
 
 function IsAimingAtPlayer () : boolean {
+if(player==null) return false;
 	var playerDirection : Vector3 = (player.position - head.position);
 	playerDirection.y = 0;
 	return Vector3.Angle (head.forward, playerDirection) < 15;

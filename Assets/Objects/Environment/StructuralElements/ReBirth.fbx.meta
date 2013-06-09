@@ -1,7 +1,204 @@
 fileFormatVersion: 2
 guid: 15a39438a4a5f4453bfe848ea137d3b5
 ModelImporter:
+  serializedVersion: 15
   fileIDToRecycleName:
+    100000: group1
+    100002: group2
+    100004: group3
+    100006: group4
+    100008: group5
+    100010: pCube1
+    100012: pCube2
+    100014: polySurface1
+    100016: polySurface15
+    100018: polySurface2
+    100020: polySurface22
+    100022: polySurface23
+    100024: polySurface24
+    100026: polySurface26
+    100028: polySurface27
+    100030: polySurface3
+    100032: polySurface31
+    100034: polySurface32
+    100036: polySurface33
+    100038: polySurface34
+    100040: polySurface39
+    100042: polySurface4
+    100044: polySurface44
+    100046: polySurface45
+    100048: polySurface46
+    100050: polySurface47
+    100052: polySurface48
+    100054: polySurface49
+    100056: polySurface5
+    100058: polySurface50
+    100060: polySurface51
+    100062: polySurface52
+    100064: polySurface53
+    100066: polySurface54
+    100068: polySurface55
+    100070: polySurface56
+    100072: polySurface57
+    100074: polySurface58
+    100076: polySurface59
+    100078: polySurface6
+    100080: polySurface60
+    100082: polySurface62
+    100084: polySurface63
+    100086: polySurface64
+    100088: polySurface65
+    100090: polySurface66
+    100092: polySurface67
+    100094: polySurface68
+    100096: polySurface69
+    100098: polySurface7
+    100100: polySurface8
+    100102: //RootNode
+    400000: group1
+    400002: group2
+    400004: group3
+    400006: group4
+    400008: group5
+    400010: pCube1
+    400012: pCube2
+    400014: polySurface1
+    400016: polySurface15
+    400018: polySurface2
+    400020: polySurface22
+    400022: polySurface23
+    400024: polySurface24
+    400026: polySurface26
+    400028: polySurface27
+    400030: polySurface3
+    400032: polySurface31
+    400034: polySurface32
+    400036: polySurface33
+    400038: polySurface34
+    400040: polySurface39
+    400042: polySurface4
+    400044: polySurface44
+    400046: polySurface45
+    400048: polySurface46
+    400050: polySurface47
+    400052: polySurface48
+    400054: polySurface49
+    400056: polySurface5
+    400058: polySurface50
+    400060: polySurface51
+    400062: polySurface52
+    400064: polySurface53
+    400066: polySurface54
+    400068: polySurface55
+    400070: polySurface56
+    400072: polySurface57
+    400074: polySurface58
+    400076: polySurface59
+    400078: polySurface6
+    400080: polySurface60
+    400082: polySurface62
+    400084: polySurface63
+    400086: polySurface64
+    400088: polySurface65
+    400090: polySurface66
+    400092: polySurface67
+    400094: polySurface68
+    400096: polySurface69
+    400098: polySurface7
+    400100: polySurface8
+    400102: //RootNode
+    2300000: pCube1
+    2300002: pCube2
+    2300004: polySurface1
+    2300006: polySurface15
+    2300008: polySurface2
+    2300010: polySurface22
+    2300012: polySurface23
+    2300014: polySurface24
+    2300016: polySurface26
+    2300018: polySurface27
+    2300020: polySurface3
+    2300022: polySurface31
+    2300024: polySurface32
+    2300026: polySurface33
+    2300028: polySurface34
+    2300030: polySurface39
+    2300032: polySurface4
+    2300034: polySurface44
+    2300036: polySurface45
+    2300038: polySurface46
+    2300040: polySurface47
+    2300042: polySurface48
+    2300044: polySurface49
+    2300046: polySurface5
+    2300048: polySurface50
+    2300050: polySurface51
+    2300052: polySurface52
+    2300054: polySurface53
+    2300056: polySurface54
+    2300058: polySurface55
+    2300060: polySurface56
+    2300062: polySurface57
+    2300064: polySurface58
+    2300066: polySurface59
+    2300068: polySurface6
+    2300070: polySurface60
+    2300072: polySurface62
+    2300074: polySurface63
+    2300076: polySurface64
+    2300078: polySurface65
+    2300080: polySurface66
+    2300082: polySurface67
+    2300084: polySurface68
+    2300086: polySurface69
+    2300088: polySurface7
+    2300090: polySurface8
+    3300000: pCube1
+    3300002: pCube2
+    3300004: polySurface1
+    3300006: polySurface15
+    3300008: polySurface2
+    3300010: polySurface22
+    3300012: polySurface23
+    3300014: polySurface24
+    3300016: polySurface26
+    3300018: polySurface27
+    3300020: polySurface3
+    3300022: polySurface31
+    3300024: polySurface32
+    3300026: polySurface33
+    3300028: polySurface34
+    3300030: polySurface39
+    3300032: polySurface4
+    3300034: polySurface44
+    3300036: polySurface45
+    3300038: polySurface46
+    3300040: polySurface47
+    3300042: polySurface48
+    3300044: polySurface49
+    3300046: polySurface5
+    3300048: polySurface50
+    3300050: polySurface51
+    3300052: polySurface52
+    3300054: polySurface53
+    3300056: polySurface54
+    3300058: polySurface55
+    3300060: polySurface56
+    3300062: polySurface57
+    3300064: polySurface58
+    3300066: polySurface59
+    3300068: polySurface6
+    3300070: polySurface60
+    3300072: polySurface62
+    3300074: polySurface63
+    3300076: polySurface64
+    3300078: polySurface65
+    3300080: polySurface66
+    3300082: polySurface67
+    3300084: polySurface68
+    3300086: polySurface69
+    3300088: polySurface7
+    3300090: polySurface8
     4300000: polySurface1
     4300002: polySurface2
     4300004: polySurface3
@@ -159,681 +356,54 @@ ModelImporter:
     4300308: polySurface67
     4300310: polySurface68
     4300312: polySurface69
-    100100000: DataTemplate __Singleton__
-  serializedVersion: 10
+    11100000: //RootNode
   materials:
     importMaterials: 1
     materialName: 3
     materialSearch: 1
   animations:
-    generateAnimations: 3
+    legacyGenerateAnimations: 4
     bakeSimulation: 0
-    splitAnimations: 1
     animationCompression: 1
-    animationRotationError: 0.500000
-    animationPositionError: 0.500000
-    animationScaleError: 0.500000
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
     animationWrapMode: 0
     clipAnimations: []
+    isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 0.900000
+    globalScale: .899999976
     meshCompression: 0
     addColliders: 0
     swapUVChannels: 0
     generateSecondaryUV: 1
     useFileUnits: 1
-    meshOptimization: 4
-    secondaryUVAngleDistortion: 8.000000
+    optimizeMeshForGPU: 1
+    secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
-    secondaryUVHardAngle: 88.000000
-    secondaryUVPackMargin: 4.000000
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
   tangentSpace:
-    normalSmoothAngle: 60.000000
+    normalSmoothAngle: 60
     splitTangentsAcrossUV: 1
     normalImportMode: 0
     tangentImportMode: 1
-  textMetaNamesToFileIDs:
-    //RootNode:
-      data:
-        first: 1
-        second: a2860100
-      data:
-        first: 4
-        second: 821a0600
-      data:
-        first: 111
-        second: 605fa900
-    group1:
-      data:
-        first: 1
-        second: c6860100
-      data:
-        first: 4
-        second: a61a0600
-    group2:
-      data:
-        first: 1
-        second: dc860100
-      data:
-        first: 4
-        second: bc1a0600
-    group3:
-      data:
-        first: 1
-        second: f6860100
-      data:
-        first: 4
-        second: d61a0600
-    group4:
-      data:
-        first: 1
-        second: 2e870100
-      data:
-        first: 4
-        second: 0e1b0600
-    group5:
-      data:
-        first: 1
-        second: 9a870100
-      data:
-        first: 4
-        second: 7a1b0600
-    pCube1:
-      data:
-        first: 1
-        second: cc860100
-      data:
-        first: 4
-        second: ac1a0600
-      data:
-        first: 23
-        second: 88182300
-      data:
-        first: 33
-        second: c85a3200
-    pCube2:
-      data:
-        first: 1
-        second: 4c870100
-      data:
-        first: 4
-        second: 2c1b0600
-      data:
-        first: 23
-        second: 02192300
-      data:
-        first: 33
-        second: 425b3200
-    polySurface1:
-      data:
-        first: 1
-        second: aa860100
-      data:
-        first: 4
-        second: 8a1a0600
-      data:
-        first: 23
-        second: 68182300
-      data:
-        first: 33
-        second: a85a3200
-    polySurface15:
-      data:
-        first: 1
-        second: b2860100
-      data:
-        first: 4
-        second: 921a0600
-      data:
-        first: 23
-        second: 70182300
-      data:
-        first: 33
-        second: b05a3200
-    polySurface2:
-      data:
-        first: 1
-        second: ac860100
-      data:
-        first: 4
-        second: 8c1a0600
-      data:
-        first: 23
-        second: 6a182300
-      data:
-        first: 33
-        second: aa5a3200
-    polySurface22:
-      data:
-        first: 1
-        second: f4860100
-      data:
-        first: 4
-        second: d41a0600
-      data:
-        first: 23
-        second: ae182300
-      data:
-        first: 33
-        second: ee5a3200
-    polySurface23:
-      data:
-        first: 1
-        second: ce860100
-      data:
-        first: 4
-        second: ae1a0600
-      data:
-        first: 23
-        second: 8a182300
-      data:
-        first: 33
-        second: ca5a3200
-    polySurface24:
-      data:
-        first: 1
-        second: e0860100
-      data:
-        first: 4
-        second: c01a0600
-      data:
-        first: 23
-        second: 9a182300
-      data:
-        first: 33
-        second: da5a3200
-    polySurface26:
-      data:
-        first: 1
-        second: d6860100
-      data:
-        first: 4
-        second: b61a0600
-      data:
-        first: 23
-        second: 92182300
-      data:
-        first: 33
-        second: d25a3200
-    polySurface27:
-      data:
-        first: 1
-        second: f0860100
-      data:
-        first: 4
-        second: d01a0600
-      data:
-        first: 23
-        second: aa182300
-      data:
-        first: 33
-        second: ea5a3200
-    polySurface3:
-      data:
-        first: 1
-        second: a6860100
-      data:
-        first: 4
-        second: 861a0600
-      data:
-        first: 23
-        second: 64182300
-      data:
-        first: 33
-        second: a45a3200
-    polySurface31:
-      data:
-        first: 1
-        second: b6860100
-      data:
-        first: 4
-        second: 961a0600
-      data:
-        first: 23
-        second: 74182300
-      data:
-        first: 33
-        second: b45a3200
-    polySurface32:
-      data:
-        first: 1
-        second: b8860100
-      data:
-        first: 4
-        second: 981a0600
-      data:
-        first: 23
-        second: 76182300
-      data:
-        first: 33
-        second: b65a3200
-    polySurface33:
-      data:
-        first: 1
-        second: b4860100
-      data:
-        first: 4
-        second: 941a0600
-      data:
-        first: 23
-        second: 72182300
-      data:
-        first: 33
-        second: b25a3200
-    polySurface34:
-      data:
-        first: 1
-        second: 46870100
-      data:
-        first: 4
-        second: 261b0600
-      data:
-        first: 23
-        second: fc182300
-      data:
-        first: 33
-        second: 3c5b3200
-    polySurface39:
-      data:
-        first: 1
-        second: 90870100
-      data:
-        first: 4
-        second: 701b0600
-      data:
-        first: 23
-        second: 46192300
-      data:
-        first: 33
-        second: 865b3200
-    polySurface4:
-      data:
-        first: 1
-        second: a4860100
-      data:
-        first: 4
-        second: 841a0600
-      data:
-        first: 23
-        second: 62182300
-      data:
-        first: 33
-        second: a25a3200
-    polySurface44:
-      data:
-        first: 1
-        second: e4860100
-      data:
-        first: 4
-        second: c41a0600
-      data:
-        first: 23
-        second: 9e182300
-      data:
-        first: 33
-        second: de5a3200
-    polySurface45:
-      data:
-        first: 1
-        second: d0860100
-      data:
-        first: 4
-        second: b01a0600
-      data:
-        first: 23
-        second: 8c182300
-      data:
-        first: 33
-        second: cc5a3200
-    polySurface46:
-      data:
-        first: 1
-        second: d8860100
-      data:
-        first: 4
-        second: b81a0600
-      data:
-        first: 23
-        second: 94182300
-      data:
-        first: 33
-        second: d45a3200
-    polySurface47:
-      data:
-        first: 1
-        second: e2860100
-      data:
-        first: 4
-        second: c21a0600
-      data:
-        first: 23
-        second: 9c182300
-      data:
-        first: 33
-        second: dc5a3200
-    polySurface48:
-      data:
-        first: 1
-        second: fe860100
-      data:
-        first: 4
-        second: de1a0600
-      data:
-        first: 23
-        second: b6182300
-      data:
-        first: 33
-        second: f65a3200
-    polySurface49:
-      data:
-        first: 1
-        second: ca860100
-      data:
-        first: 4
-        second: aa1a0600
-      data:
-        first: 23
-        second: 86182300
-      data:
-        first: 33
-        second: c65a3200
-    polySurface5:
-      data:
-        first: 1
-        second: a8860100
-      data:
-        first: 4
-        second: 881a0600
-      data:
-        first: 23
-        second: 66182300
-      data:
-        first: 33
-        second: a65a3200
-    polySurface50:
-      data:
-        first: 1
-        second: bc860100
-      data:
-        first: 4
-        second: 9c1a0600
-      data:
-        first: 23
-        second: 7a182300
-      data:
-        first: 33
-        second: ba5a3200
-    polySurface51:
-      data:
-        first: 1
-        second: ee860100
-      data:
-        first: 4
-        second: ce1a0600
-      data:
-        first: 23
-        second: a8182300
-      data:
-        first: 33
-        second: e85a3200
-    polySurface52:
-      data:
-        first: 1
-        second: ea860100
-      data:
-        first: 4
-        second: ca1a0600
-      data:
-        first: 23
-        second: a4182300
-      data:
-        first: 33
-        second: e45a3200
-    polySurface53:
-      data:
-        first: 1
-        second: e6860100
-      data:
-        first: 4
-        second: c61a0600
-      data:
-        first: 23
-        second: a0182300
-      data:
-        first: 33
-        second: e05a3200
-    polySurface54:
-      data:
-        first: 1
-        second: fa860100
-      data:
-        first: 4
-        second: da1a0600
-      data:
-        first: 23
-        second: b2182300
-      data:
-        first: 33
-        second: f25a3200
-    polySurface55:
-      data:
-        first: 1
-        second: be860100
-      data:
-        first: 4
-        second: 9e1a0600
-      data:
-        first: 23
-        second: 7c182300
-      data:
-        first: 33
-        second: bc5a3200
-    polySurface56:
-      data:
-        first: 1
-        second: ae860100
-      data:
-        first: 4
-        second: 8e1a0600
-      data:
-        first: 23
-        second: 6c182300
-      data:
-        first: 33
-        second: ac5a3200
-    polySurface57:
-      data:
-        first: 1
-        second: d2860100
-      data:
-        first: 4
-        second: b21a0600
-      data:
-        first: 23
-        second: 8e182300
-      data:
-        first: 33
-        second: ce5a3200
-    polySurface58:
-      data:
-        first: 1
-        second: f8860100
-      data:
-        first: 4
-        second: d81a0600
-      data:
-        first: 23
-        second: b0182300
-      data:
-        first: 33
-        second: f05a3200
-    polySurface59:
-      data:
-        first: 1
-        second: c8860100
-      data:
-        first: 4
-        second: a81a0600
-      data:
-        first: 23
-        second: 84182300
-      data:
-        first: 33
-        second: c45a3200
-    polySurface6:
-      data:
-        first: 1
-        second: a0860100
-      data:
-        first: 4
-        second: 801a0600
-      data:
-        first: 23
-        second: 60182300
-      data:
-        first: 33
-        second: a05a3200
-    polySurface60:
-      data:
-        first: 1
-        second: ba860100
-      data:
-        first: 4
-        second: 9a1a0600
-      data:
-        first: 23
-        second: 78182300
-      data:
-        first: 33
-        second: b85a3200
-    polySurface62:
-      data:
-        first: 1
-        second: f2860100
-      data:
-        first: 4
-        second: d21a0600
-      data:
-        first: 23
-        second: ac182300
-      data:
-        first: 33
-        second: ec5a3200
-    polySurface63:
-      data:
-        first: 1
-        second: c2860100
-      data:
-        first: 4
-        second: a21a0600
-      data:
-        first: 23
-        second: 80182300
-      data:
-        first: 33
-        second: c05a3200
-    polySurface64:
-      data:
-        first: 1
-        second: de860100
-      data:
-        first: 4
-        second: be1a0600
-      data:
-        first: 23
-        second: 98182300
-      data:
-        first: 33
-        second: d85a3200
-    polySurface65:
-      data:
-        first: 1
-        second: ec860100
-      data:
-        first: 4
-        second: cc1a0600
-      data:
-        first: 23
-        second: a6182300
-      data:
-        first: 33
-        second: e65a3200
-    polySurface66:
-      data:
-        first: 1
-        second: fc860100
-      data:
-        first: 4
-        second: dc1a0600
-      data:
-        first: 23
-        second: b4182300
-      data:
-        first: 33
-        second: f45a3200
-    polySurface67:
-      data:
-        first: 1
-        second: d4860100
-      data:
-        first: 4
-        second: b41a0600
-      data:
-        first: 23
-        second: 90182300
-      data:
-        first: 33
-        second: d05a3200
-    polySurface68:
-      data:
-        first: 1
-        second: c4860100
-      data:
-        first: 4
-        second: a41a0600
-      data:
-        first: 23
-        second: 82182300
-      data:
-        first: 33
-        second: c25a3200
-    polySurface69:
-      data:
-        first: 1
-        second: da860100
-      data:
-        first: 4
-        second: ba1a0600
-      data:
-        first: 23
-        second: 96182300
-      data:
-        first: 33
-        second: d65a3200
-    polySurface7:
-      data:
-        first: 1
-        second: b0860100
-      data:
-        first: 4
-        second: 901a0600
-      data:
-        first: 23
-        second: 6e182300
-      data:
-        first: 33
-        second: ae5a3200
-    polySurface8:
-      data:
-        first: 1
-        second: c0860100
-      data:
-        first: 4
-        second: a01a0600
-      data:
-        first: 23
-        second: 7e182300
-      data:
-        first: 33
-        second: be5a3200
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    handles: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  additionalBone: 1
+  animationType: 1
+  userData: 

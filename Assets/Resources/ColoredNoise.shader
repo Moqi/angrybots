@@ -32,20 +32,15 @@ Shader "Hidden/ColoredNoise" {
 		{
 			v2f o;
 			
-			o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+			o.pos = mul (UNITY_MATRIX_MVP, v.vertex);	
 			o.uv = v.texcoord.xy;
-						
+			
 			#if SHADER_API_D3D9
 			o.uv_screen = v.vertex.xyxy;
 			if (_MainTex_TexelSize.y < 0)
         		o.uv_screen.y = 1-o.uv_screen.y;
         	#else
         		o.uv_screen = v.vertex.xy;
-			#endif
-			
-			#if SHADER_API_FLASH
-			o.uv.xy *= unity_NPOTScale.xy;
-			o.uv_screen.xy *= unity_NPOTScale.xy;
 			#endif
 			
 			return o; 

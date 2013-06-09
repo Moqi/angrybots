@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 96d2824dbb61e594088df94f759733e5
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - skin: {instanceID: 0}
+  - spinnerMovieTex: {fileID: 15200000, guid: 959e64b0ba34c9c4b969275a42036880, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 

@@ -6,14 +6,24 @@ public var mouseUpSignals : SignalSender;
 private var state : boolean = false;
 
 #if UNITY_IPHONE || UNITY_ANDROID
-private var joysticks : Joystick[];
-
+private var joysticks : Joystick[] = new Joystick[0];
+#endif
 function Start () {
+    yield  0; //wait for joystick setup
+	#if UNITY_IPHONE || UNITY_ANDROID
 	joysticks = FindObjectsOfType (Joystick) as Joystick[];	
-}
 #endif
 
+	if(!(GetComponent("PhotonView") as PhotonView).isMine)
+		enabled=false;
+}
+
+
+
+
 function Update () {
+	
+	
 #if UNITY_IPHONE || UNITY_ANDROID
 	if (state == false && joysticks[0].tapCount > 0) {
 		mouseDownSignals.SendSignals (this);
@@ -36,7 +46,7 @@ function Update () {
 			state = false;
 		}
 	#else
-		if (state == false && Input.GetMouseButtonDown (0)) {
+		if (state == false && Input.GetMouseButtonDown (0) && GameManager.GameCanClickHere() ) {
 			mouseDownSignals.SendSignals (this);
 			state = true;
 		}
