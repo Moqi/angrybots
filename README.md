@@ -1,79 +1,50 @@
-# Roar Angrybots demo
+# Roar Unity SDK: Angrybots demo
 
-**Nov-Dec 2012**: The [Roar Unity-SDK](http://github.com/roarengine/sdk-unity/) is currently under *heavy beta development*. The code in this Angrybots demo is based on code that is in some cases both **old** and **volatile**. Expect fairly significant, large scale changes over the next 2 weeks.
+This demo repository uses the well known Unity AngryBots demo, which has been fully integrated with **Roar Unity SDK**.
 
-The "latest" updates are in branch `feature/beta_integration`. Use at your own risk.
+It *also* allows to play in a multiplayer mode using **[Photon Cloud](http://cloud.exitgames.com/)** and it is now possible to invite friends, accept invitations, delete friends and purchasing items.
 
-Legacy notes below:
+This AngryBots version takes full advantage of both Photon and Roar SDKs.
 
----
+## Demo
 
-# How to setup the Roar Unity SDK AngryBots demo project in Unity
+This demo is literally just that, a demo. It's rough, unfinished, and designed as a *starting point* for you to get a handle on how to integrate the Roar SDK into your game. Couple things to try using the SDK widgets:
 
-PART 1: Import of project Assets
+- Create a **new player** account
+- Buy a new laser sight from the **shop**
+- Consume the `super speed` from your **inventory**
 
-To try out the AngryBots roar unity sdk demo application 3 artifacts are required.
+There's a ton more, so take it for a spin here:
 
-1. The AngryBots Unity package from the Unity Asset store
-http://u3d.as/content/unity-technologies/angry-bots/2aL
+**[http://roarengine.com/unity/demo](http://roarengine.com/unity/demo/)**
 
-2. The latest augmented AngryBots roar unity files from
-https://github.com/downloads/roarengine/sdks/roarunitysdk-angrybots.zip
 
-3. The latest stable roar unity sdk package from
-https://github.com/downloads/roarengine/sdks/RoarIO.unityPackage
+## Project Setup
 
-The process is simple, first you import the AngryBots unity package into a new Unity project,
-at this stage you should run the demo via the play button to ensure the vanilla demo is
-functioning as expected. You can either download the AngryBots demo from the Unity Asset Store
-or in recent versions of Unity you will find that AngryBots comes as part of the install
-and can be imported during the creation of a new Unity project.
+First grab a copy of the [Roar SDK package](http://github.com/roarengine/sdk-unity/Roar.unityPackage).
 
-The next step is to import the AngryBots Roar Unity sdk zip.
-This zip file contains source code to augment the original AngryBots tech demo.
-Simply extract it inside your Unity project folder, replacing pre-existing files when prompted.
-NOTE: The contents of the zip should be overlaid on top of existing folders where necessary,
-some zip applications will simply replace folders that pre-exist rather than splicing the 
-contents of a pre-existing folder with the contents of a new folder with the same name.
- 
-For example, on a mac, you would use the ditto command to ensure AngryBots source files are not nuked when you extract the zip:
+- Create a fresh project and **import** the Roar SDK package
+- Add the following scenes to your build settings:
+    - `Scenes/0_Preloader`
+    - `Scenes/1_MainMenu`
+    - `Scenes/2_AngryBotsMP`
+    - `Scenes/3_Endscene`
+- Click **Build**
+    - Note: You can repeat this step to Build several different versions. In particular, on OS X it will enable you to run two or more instances of the game at the same time
+- **Photon server:** Setup **PUN** (see the PUN wizard or the Photon provided [Readme](https://github.com/unityosgt/source/blob/master/Assets/Photon%20Unity%20Networking/readme.txt)). You can either host your own server or use the free Photon Cloud trial
+- **Run** the `Preloader` or `MainMenu` scenes
 
-~~~
-ditto -Vxk roarunitysdk-angrybots.zip ~/MyAngryBotsUnityProject/Assets/
-~~~
+## Multiplayer mode
 
-Finally you will need to import the Roar Unity sdk package via the menu item at
-Assets->Import Package->Custom Package...
+You can play two players at the same time on one machine using two separate instances of the game. On OS X you will need two (or more) different builds to do this.
 
-PART 2: 
+After starting the game you will be presented with two widgets:
 
-After you have imported the 3 artifacts into your project, you will need to
-setup two empty game objects to attach a series of scripts to.
+1. **Roar SDK login** - create a new user or log in with a previously created player
+2. **Photon multiplayer mode widget**
+    - On the first instance of the game click `GO` to create a new room.
+    - On the second instance click `JOIN`.
 
-First open the AngryBots scene by double-clicking it from within the Project panel (it's the
-one with the black and white Unity icon).
+At this moment you should be able to see two players in each instance of the game. Once you login using Roar's Widget, each of the game characters will be labelled correctly with their login name.
 
-Next create an empty Game Object and name it Roar via the menu item at
-Game Object->Create Empty
-
-From the Project panel, drag the RoarIO.cs file within the Plugins/RoarIO/ folder onto the Roar game object.
-
-Next create an empty game object and name it RoarDemo via the menu item at
-Game Object->Create Empty
-
-Then drag and drop the following scripts from the Project panel onto the RoarDemo game object.
-
-Demo/RoarDemo.js
-Demo/EquipmentManager.js
-Demo/ConfirmBox.js
-Standard assets/GameScore.js
-
-Select the RoarDemo game object in the Hierarchy panel
-
-The Inspector panel will show the scripts that are attached to the RoarDemo game object,
-note the RoarDemo script has a number of public variables exposed, including Pause Icon and Demo Skin. 
-By clicking the Asset selector found at the right most region of each variable row (it looks like a tiny
-circle), set the Pause Icon to the Pause texture and set the Demo Skin to the DemoGUISkin.
-
-You are now ready to run the demo :)
-
+You can now enjoy the multi-player game and use the Roar's widgets to invite friends, check invites, accept invitations, delete friend and purchase and activate items.
