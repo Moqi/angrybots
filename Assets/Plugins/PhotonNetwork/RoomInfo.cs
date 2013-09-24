@@ -10,10 +10,8 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.Collections;
-
 using ExitGames.Client.Photon;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
+
 
 /// <summary>
 /// A simplified room with just the info required to list and join, used for the room listing in the lobby.
@@ -47,7 +45,8 @@ public class RoomInfo
     /// <summary>Backing field for property.</summary>
     protected string nameField;
 
-    /// <summary>Custom properties of a room. All keys are string-typed and the values depend on the game/application.</summary>
+    /// <summary>Read-only "cache" of custom properties of a room. Set via Room.SetCustomProperties (not available for RoomInfo class!).</summary>
+    /// <remarks>All keys are string-typed and the values depend on the game/application.</remarks>
     public Hashtable customProperties
     {
         get
@@ -162,7 +161,7 @@ public class RoomInfo
     /// <returns>String showing the RoomInfo.</returns>
     public override string ToString()
     {
-        return string.Format("Room: '{0}' visible: {1} open: {2} max: {3} count: {4}\ncustomProps: {5}", this.nameField, this.visibleField, this.openField, this.maxPlayersField, this.playerCount, SupportClass.DictionaryToString(this.customPropertiesField));
+        return string.Format("Room: '{0}' visible: {1} open: {2} max: {3} count: {4}\ncustomProps: {5}", this.nameField, this.visibleField, this.openField, this.maxPlayersField, this.playerCount, this.customPropertiesField.ToStringFull());
     }
 
     /// <summary>Copies "well known" properties to fields (isVisible, etc) and caches the custom properties (string-keys only) in a local hashtable.</summary>

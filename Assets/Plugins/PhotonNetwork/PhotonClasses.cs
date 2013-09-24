@@ -7,12 +7,13 @@
 // </summary>
 // <author>developer@exitgames.com</author>
 // ----------------------------------------------------------------------------
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 
 /// <summary>Class for constants. Defines photon-event-codes for PUN usage.</summary>
-internal class PhotonNetworkMessages
+internal class PunEvent
 {
     public const byte RPC = 200; 
     public const byte SendSerialize = 201;
@@ -21,6 +22,8 @@ internal class PhotonNetworkMessages
     public const byte Destroy = 204;
     public const byte RemoveCachedRPCs = 205;
     public const byte SendSerializeReliable = 206;  // TS: added this but it's not really needed anymore
+    public const byte DestroyPlayer = 207;  // TS: added to make others remove all GOs of a player
+    public const byte AssignMaster = 208;  // TS: added to assign someone master client (overriding the current)
 }
 
 /// <summary>Enum of "target" options for RPCs. These define which remote clients get your RPC call. </summary>
@@ -46,6 +49,7 @@ namespace Photon
                 return PhotonView.Get(this);
             }
         }
+
         new public PhotonView networkView
         {
             get
@@ -53,78 +57,6 @@ namespace Photon
                 Debug.LogWarning("Why are you still using networkView? should be PhotonView?");
                 return PhotonView.Get(this);
             }
-        }
-    }
-}
-
-/// <summary>
-/// Internally used, the ID of a PhotonView is a "composite" integer number of:
-/// owner.ID * PhotonNetwork.MAX_VIEW_IDS + internalID
-/// </summary>
-public class PhotonViewID 
-{
-    private PhotonPlayer internalOwner;
-    private int internalID = -1; // 1-256 (1-MAX_NETWORKVIEWS)
-    
-    public PhotonViewID(int ID, PhotonPlayer owner)
-    {
-        internalID = ID;
-        internalOwner = owner;
-    }
-
-    public int ID
-    {   
-        // PLAYERNR*MAX_NETWORKVIEWS + internalID
-        get
-        {
-            if(internalOwner == null)
-            {
-                //Scene ID
-                return internalID;
-            }
-            else
-            {
-                return (internalOwner.ID*PhotonNetwork.MAX_VIEW_IDS) + internalID;
-            }
-        }
-    }
-
-    public bool isMine
-    {
-        get { return owner.isLocal; }
-    }
-
-    public PhotonPlayer owner
-    {
-        get
-        {
-            int ownerNR = ID / PhotonNetwork.MAX_VIEW_IDS;
-            return PhotonPlayer.Find(ownerNR);
-        }
-    }
-
-    public override string ToString()
-    {
-        return this.ID.ToString();
-    }
-
-    public override bool Equals(object p)
-    {
-        PhotonViewID pp = p as PhotonViewID;
-        return (pp != null && this.ID == pp.ID);
-    }
-
-    public override int GetHashCode()
-    {
-        return this.ID;
-    }
-
-    [System.Obsolete("Used for compatibility with Unity networking only.")]
-    public static PhotonViewID unassigned
-    {
-        get
-        {
-            return new PhotonViewID(-1, null);
         }
     }
 }
@@ -165,6 +97,98 @@ public class PhotonMessageInfo
     public override string ToString()
     {
         return string.Format("[PhotonMessageInfo: player='{1}' timestamp={0}]", this.timestamp, this.sender);
+    }
+}
+
+public class PBitStream
+{
+    List<byte> streamBytes;
+    private int currentByte;
+    private int totalBits = 0;
+
+    public int ByteCount
+    {
+        get { return BytesForBits(this.totalBits); }
+    }
+
+    public int BitCount
+    {
+        get { return this.totalBits; }
+        private set { this.totalBits = value; }
+    }
+
+    public PBitStream()
+    {
+        this.streamBytes = new List<byte>(1);
+    }
+
+    public PBitStream(int bitCount)
+    {
+        this.streamBytes = new List<byte>(BytesForBits(bitCount));
+    }
+
+    public PBitStream(IEnumerable<byte> bytes, int bitCount)
+    {
+        this.streamBytes = new List<byte>(bytes);
+        this.BitCount = bitCount;
+    }
+
+    public static int BytesForBits(int bitCount)
+    {
+        if (bitCount <= 0)
+        {
+            return 0;
+        }
+
+        return ((bitCount - 1) / 8) + 1;
+    }
+
+    public void Add(bool val)
+    {
+        int bytePos = this.totalBits / 8;
+        if (bytePos > this.streamBytes.Count-1 || totalBits == 0)
+        {
+            this.streamBytes.Add(0);
+        }
+
+        if (val)
+        {
+            int currentByteBit = 7 - (this.totalBits % 8);
+            this.streamBytes[bytePos] |= (byte)(1 << currentByteBit);
+        }
+
+        this.totalBits++;
+    }
+
+    public byte[] ToBytes()
+    {
+        return streamBytes.ToArray();
+    }
+
+    public int Position { get; set; }
+
+    public bool GetNext()
+    {
+        if (this.Position > this.totalBits)
+        {
+            throw new Exception("End of PBitStream reached. Can't read more.");
+        }
+
+        return Get(this.Position++);
+    }
+
+    public bool Get(int bitIndex)
+    {
+        int byteIndex = bitIndex / 8;
+        int bitInByIndex = 7 - (bitIndex % 8);
+        return ((streamBytes[byteIndex] & (byte)(1 << bitInByIndex)) > 0);
+    }
+
+    public void Set(int bitIndex, bool value)
+    {
+        int byteIndex = bitIndex / 8;
+        int bitInByIndex = 7 - (bitIndex % 8);
+        this.streamBytes[byteIndex] |= (byte)(1 << bitInByIndex);
     }
 }
 
@@ -396,29 +420,6 @@ public class PhotonStream
                 obj = (Quaternion)data[currentItem];
                 currentItem++;
             }
-        }
-    }
-
-    public void Serialize(ref PhotonViewID obj)
-    {
-        if (write)
-        {
-            this.data.Add(obj);
-        }
-        else
-        {
-            int ID = (int)data[currentItem];
-            currentItem++;
-            
-            int internalID = ID % PhotonNetwork.MAX_VIEW_IDS;
-            int actorID = ID / PhotonNetwork.MAX_VIEW_IDS;
-            PhotonPlayer owner = null;
-            if (actorID > 0)
-            {
-                owner = PhotonPlayer.Find(actorID);
-            }
-
-            obj = new PhotonViewID(internalID, owner);
         }
     }
 }

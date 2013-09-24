@@ -9,11 +9,9 @@
 // <author>developer@exitgames.com</author>
 // ----------------------------------------------------------------------------
 
-using ExitGames.Client.Photon;
-
 using UnityEngine;
-using System.Collections;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+
 
 /// <summary>
 /// Summarizes a "player" within a room, identified (in that room) by actorID.
@@ -36,7 +34,6 @@ public class PhotonPlayer
     private int actorID = -1;
 
     private string nameField = "";
-    private string roaridField = "";
 
     /// <summary>Nickname of this player.</summary>
     public string name {
@@ -55,14 +52,6 @@ public class PhotonPlayer
             this.nameField = value;
         }
     }
-    
-    public string roarid {
-    	get {return this.roaridField;}
-    	set {
-    		if (!isLocal) {Debug.LogError("Error: Cannot change the roar id of a remote player!"); return;}
-    		this.roaridField = value;
-    	}
-    }
 
     /// <summary>Only one player is controlled by each client. Others are not local.</summary>
     public readonly bool isLocal = false;
@@ -75,7 +64,12 @@ public class PhotonPlayer
         get { return (PhotonNetwork.networkingPeer.mMasterClient == this); }
     }
 
-    /// <summary>Cache for custom properties of player.</summary>
+    /// <summary>Read-only cache for custom properties of player. Set via Player.SetCustomProperties.</summary>
+    /// <remarks>
+    /// Don't modify the content of this Hashtable. Use SetCustomProperties and the 
+    /// properties of this class to modify values. When you use those, the client will
+    /// sync values with the server.
+    /// </remarks>
     public Hashtable customProperties { get; private set; }
 
     /// <summary>Creates a Hashtable with all properties (custom and "well known" ones).</summary>
@@ -87,7 +81,6 @@ public class PhotonPlayer
             Hashtable allProps = new Hashtable();
             allProps.Merge(this.customProperties);
             allProps[ActorProperties.PlayerName] = this.name;
-            allProps[ActorProperties.PlayerRoarID] = this.roarid;
             return allProps;
         }
     }
@@ -131,12 +124,6 @@ public class PhotonPlayer
         if (properties.ContainsKey(ActorProperties.PlayerName))
         {
             this.nameField = (string)properties[ActorProperties.PlayerName];
-            Debug.Log("UGH [" + this.nameField + "]");
-        }
-        if (properties.ContainsKey(ActorProperties.PlayerRoarID))
-        {
-        	this.roaridField = (string)properties[ActorProperties.PlayerRoarID];
-        	Debug.Log("UGHH [" + this.roaridField + "]");
         }
 
         this.customProperties.MergeStringKeys(properties);
@@ -180,15 +167,21 @@ public class PhotonPlayer
     }
 
     /// <summary>
-    /// Updates the custom properties of this Room with propertiesToSet.
-    /// Only string-typed keys are applied, new properties (string keys) are added, existing are updated
-    /// and if a value is set to null, this will remove the custom property.
+    /// Updates and synchronizes the named properties of this Player with the values of propertiesToSet.
     /// </summary>
     /// <remarks>
-    /// This method requires you to be connected and be in a room. Otherwise, the local data is updated only as no remote players are known.
+    /// Any player's properties are available in a Room only and only until the player disconnect or leaves.
+    /// Access any player's properties by: Player.CustomProperties (read-only!) but don't modify that hashtable.
+    /// 
+    /// New properties are added, existing values are updated.
+    /// Other values will not be changed, so only provide values that changed or are new.
+    /// To delete a named (custom) property of this player, use null as value.
+    /// Only string-typed keys are applied (everything else is ignored).
+    /// 
     /// Local cache is updated immediately, other players are updated through Photon with a fitting operation.
+    /// To reduce network traffic, set only values that actually changed.
     /// </remarks>
-    /// <param name="propertiesToSet"></param>
+    /// <param name="propertiesToSet">Hashtable of props to udpate, set and sync. See description.</param>
     public void SetCustomProperties(Hashtable propertiesToSet)
     {
         if (propertiesToSet == null)
@@ -202,7 +195,11 @@ public class PhotonPlayer
 
         // send (sync) these new values
         Hashtable customProps = propertiesToSet.StripToStringKeys() as Hashtable;
-        PhotonNetwork.networkingPeer.OpSetCustomPropertiesOfActor(this.actorID, customProps, true, 0);
+        if (this.actorID > 0)
+        {
+            PhotonNetwork.networkingPeer.OpSetCustomPropertiesOfActor(this.actorID, customProps, true, 0);
+        }
+        NetworkingPeer.SendMonoMessage(PhotonNetworkingMessage.OnPhotonPlayerPropertiesChanged, this);
     }
 
     /// <summary>
@@ -212,10 +209,13 @@ public class PhotonPlayer
     /// <returns>The player with matching actorID or null, if the actorID is not in use.</returns>
     public static PhotonPlayer Find(int ID)
     {
-        foreach (PhotonPlayer player in PhotonNetwork.playerList)
+        for (int index = 0; index < PhotonNetwork.playerList.Length; index++)
         {
+            PhotonPlayer player = PhotonNetwork.playerList[index];
             if (player.ID == ID)
+            {
                 return player;
+            }
         }
         return null;
     }

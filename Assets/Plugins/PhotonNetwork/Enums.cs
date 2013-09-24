@@ -145,7 +145,7 @@ public enum PhotonNetworkingMessage
     OnLeftRoom,
 
     /// <summary>
-    /// Called -after- switching to a new MasterClient because the previous MC left the room. The last MC will already be removed at this points.
+    /// Called -after- switching to a new MasterClient because the previous MC left the room (not when getting into a room). The last MC will already be removed at this time.
     /// Example: void OnMasterClientSwitched(PhotonPlayer newMasterClient){ ... }
     /// </summary>
     OnMasterClientSwitched,
@@ -163,21 +163,24 @@ public enum PhotonNetworkingMessage
     OnPhotonJoinRoomFailed,
 
     /// <summary>
-    /// Called after a CreateRoom() succeeded creating a room. Note that this implies the local client is the MasterClient. OnJoinedRoom is always called after OnCreatedRoom.
+    /// Called when CreateRoom finishes creating the room. After this, OnJoinedRoom will be called, too (no matter if creating one or joining).
     /// Example: void OnCreatedRoom(){ ... }
     /// </summary>
+    /// <remarks>This implies the local client is the MasterClient.</remarks>
     OnCreatedRoom,
 
     /// <summary>
-    /// Called when the connect to the master server is successful and the client can create/join rooms. 
-    /// Note: When PhotonNetwork.autoJoinLobby was set to false, OnConnectedToMaster is called instead!
+    /// Called on entering the Master Server's lobby. Client can create/join rooms but room list is not available until OnReceivedRoomListUpdate is called!
     /// Example: void OnJoinedLobby(){ ... }
     /// </summary>
-    /// <remarks>While in the lobby, the roomlist is automatically updated.</remarks>
+    /// <remarks>
+    /// Note: When PhotonNetwork.autoJoinLobby is false, OnConnectedToMaster will be called instead and the room list won't be available.
+    /// While in the lobby, the roomlist is automatically updated in fixed intervals (which you can't modify).
+    /// </remarks>
     OnJoinedLobby,
 
     /// <summary>
-    /// Called after leaving the lobby
+    /// Called after leaving the lobby.
     /// Example: void OnLeftLobby(){ ... }
     /// </summary>
     OnLeftLobby,
@@ -205,19 +208,13 @@ public enum PhotonNetworkingMessage
     OnFailedToConnectToPhoton,
 
     /// <summary>
-    /// Called after receiving the room list for the first time. Only possible in the Lobby state.
-    /// Example: void OnReceivedRoomList(){ ... }
-    /// </summary>
-    OnReceivedRoomList,
-
-    /// <summary>
-    /// Called after receiving a room list update. Only possible in the Lobby state.
+    /// Called for any update of the room listing (no matter if "new" list or "update for known" list). Only called in the Lobby state (on master server).
     /// Example: void OnReceivedRoomListUpdate(){ ... }
     /// </summary>
     OnReceivedRoomListUpdate,
 
     /// <summary>
-    /// Called after joining a room. Called on all clients (including the Master Client)
+    /// Called when entering a room (by creating or joining it). Called on all clients (including the Master Client).
     /// Example: void OnJoinedRoom(){ ... }
     /// </summary>
     OnJoinedRoom,
@@ -268,7 +265,41 @@ public enum PhotonNetworkingMessage
     /// The Photon Cloud will mail you when the CCU limit was reached. This is also visible in the Dashboard (webpage).
     /// Example: void OnPhotonMaxCccuReached(){ ... }
     /// </remarks>
-    OnPhotonMaxCccuReached
+    OnPhotonMaxCccuReached,
+	
+	/// <summary>
+    /// Called when inside a room when its custom properties have changed. This is ALSO called for room property changes by the local players.
+    /// </summary>
+    /// <remarks>
+    /// Example: void OnPhotonCustomRoomPropertiesChanged(){ ... }
+    /// </remarks>
+	OnPhotonCustomRoomPropertiesChanged,
+	
+	/// <summary>
+    /// Called when inside a room when a players custom properties change.
+    /// </summary>
+    /// <remarks>
+    /// Example: void OnPhotonPlayerPropertiesChanged(PhotonPlayer player){ ... }
+    /// </remarks>
+	OnPhotonPlayerPropertiesChanged,
+
+    /// <summary>
+    /// Called when the server sent the response to a FindFriends request and updated PhotonNetwork.Friends.
+    /// </summary>
+    /// <remarks>
+    /// Example: void OnUpdatedFriendList(){ ... }
+    /// </remarks>
+    OnUpdatedFriendList,
+    
+    /// <summary>
+    /// Called when the custom authentication failed (due to user-input, bad tokens/secrets or wrong configuration). Followed by disconnect!
+    /// Example: void OnCustomAuthenticationFailed(string debugMessage){ ... }
+    /// </summary>
+    /// <remarks>
+    /// Unless you setup a custom authentication service for your app (in the Dashboard), this won't be called!
+    /// If authentication is successful, this method is also not called but OnJoinedLobby, OnConnectedToMaster will be called (just as usual).
+    /// </remarks>
+    OnCustomAuthenticationFailed,
 }
 
 /// <summary>
@@ -283,16 +314,34 @@ public enum DisconnectCause
     /// Possible cause: Local server not running.</summary>
     ExceptionOnConnect = StatusCode.ExceptionOnConnect,
 
+    /// <summary>The security settings for client or server don't allow a connection (see remarks).</summary>
+    /// <remarks>
+    /// A common cause for this is that browser clients read a "crossdomain" file from the server.
+    /// If that file is unavailable or not configured to let the client connect, this exception is thrown.
+    /// Photon usually provides this crossdomain file for Unity. 
+    /// If it fails, read:
+    /// http://doc.exitgames.com/photon-server/PolicyApp
+    /// </remarks>
+    SecurityExceptionOnConnect = StatusCode.SecurityExceptionOnConnect,
+
     /// <summary>Connection timed out.
     /// Possible cause: Remote server not running or required ports blocked (due to router or firewall).</summary>
+    [System.Obsolete("Replaced by clearer: DisconnectByClientTimeout")]
     TimeoutDisconnect = StatusCode.TimeoutDisconnect,
+
+    /// <summary>Timeout disconnect by client (which decided an ACK was missing for too long).</summary>
+    DisconnectByClientTimeout = StatusCode.TimeoutDisconnect,
     
     /// <summary>Exception in the receive-loop.
     /// Possible cause: Socket failure.</summary>
     InternalReceiveException = StatusCode.InternalReceiveException,
 
     /// <summary>Server actively disconnected this client.</summary>
+    [System.Obsolete("Replaced by clearer: DisconnectByServerTimeout")]
     DisconnectByServer = StatusCode.DisconnectByServer,
+
+    /// <summary>Timeout disconnect by server (which decided an ACK was missing for too long).</summary>
+    DisconnectByServerTimeout = StatusCode.DisconnectByServer,
 
     /// <summary>Server actively disconnected this client.
     /// Possible cause: Server's send buffer full (too much data for client).</summary>
@@ -304,4 +353,10 @@ public enum DisconnectCause
 
     /// <summary>Some exception caused the connection to close.</summary>
     Exception = StatusCode.Exception,
+
+    /// <summary>(32756) Authorization on the Photon Cloud failed because the app's subscription does not allow to use a particular region's server.</summary>
+    InvalidRegion = ErrorCode.InvalidRegion,
+
+    /// <summary>(32757) Authorization on the Photon Cloud failed because the concurrent users (CCU) limit of the app's subscription is reached.</summary>
+    MaxCcuReached = ErrorCode.MaxCcuReached,
 }

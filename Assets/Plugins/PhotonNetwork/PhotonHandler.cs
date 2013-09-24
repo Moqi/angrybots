@@ -4,9 +4,10 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System;
 using ExitGames.Client.Photon;
 using UnityEngine;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
+
 
 /// <summary>
 /// Internal Monobehaviour that allows Photon to run an Update loop.
@@ -15,30 +16,40 @@ internal class PhotonHandler : Photon.MonoBehaviour, IPhotonPeerListener
 {
     public static PhotonHandler SP;
 
-    public int updateInterval;
+    public int updateInterval;  // time [ms] between consecutive SendOutgoingCommands calls
 
-    public int updateIntervalOnSerialize;
+    public int updateIntervalOnSerialize;  // time [ms] between consecutive RunViewUpdate calls (sending syncs, etc)
 
-    private int nextSendTickCount = Environment.TickCount;
+    private int nextSendTickCount = 0;
 
-    private int nextSendTickCountOnSerialize = Environment.TickCount;
+    private int nextSendTickCountOnSerialize = 0;
+    
+    private static bool sendThreadShouldRun;
 
-    private void Awake()
+    protected void Awake()
     {
-        if (SP != null && SP != this)
+        if (SP != null && SP != this && SP.gameObject != null)
         {
-            Debug.LogError("Error: we already have an PhotonMono around!");
-            Destroy(this.gameObject);
+            GameObject.DestroyImmediate(SP.gameObject);
         }
 
-        DontDestroyOnLoad(this);
         SP = this;
+        DontDestroyOnLoad(this.gameObject);
 
         this.updateInterval = 1000 / PhotonNetwork.sendRate;
         this.updateIntervalOnSerialize = 1000 / PhotonNetwork.sendRateOnSerialize;
+
+        PhotonHandler.StartFallbackSendAckThread();
     }
 
-    private void Update()
+    /// <summary>Called by Unity when the application is closed. Tries to disconnect.</summary>
+    protected void OnApplicationQuit()
+    {
+        PhotonNetwork.Disconnect();
+        PhotonHandler.StopFallbackSendAckThread();
+    }
+
+    protected void Update()
     {
         if (PhotonNetwork.networkingPeer == null)
         {
@@ -66,13 +77,16 @@ internal class PhotonHandler : Photon.MonoBehaviour, IPhotonPeerListener
             Profiler.EndSample();
         }
 
-        if (PhotonNetwork.isMessageQueueRunning && Environment.TickCount > this.nextSendTickCountOnSerialize)
+        int currentMsSinceStart = (int)(Time.realtimeSinceStartup * 1000);  // avoiding Environment.TickCount, which could be negative on long-running platforms
+        if (PhotonNetwork.isMessageQueueRunning && currentMsSinceStart > this.nextSendTickCountOnSerialize)
         {
             PhotonNetwork.networkingPeer.RunViewUpdate();
-            this.nextSendTickCountOnSerialize = Environment.TickCount + this.updateIntervalOnSerialize;
+            this.nextSendTickCountOnSerialize = currentMsSinceStart + this.updateIntervalOnSerialize;
+            this.nextSendTickCount = 0;     // immediately send when synchronization code was running
         }
 
-        if (Environment.TickCount > this.nextSendTickCount)
+        currentMsSinceStart = (int)(Time.realtimeSinceStartup * 1000);
+        if (currentMsSinceStart > this.nextSendTickCount)
         {
             bool doSend = true;
             while (PhotonNetwork.isMessageQueueRunning && doSend)
@@ -83,39 +97,68 @@ internal class PhotonHandler : Photon.MonoBehaviour, IPhotonPeerListener
                 Profiler.EndSample();
             }
 
-            this.nextSendTickCount = Environment.TickCount + this.updateInterval;
+            this.nextSendTickCount = currentMsSinceStart + this.updateInterval;
         }
-    }
-
-    /// <summary>Called by Unity when the application is closed. Tries to disconnect.</summary>
-    public void OnApplicationQuit()
-    {
-        PhotonNetwork.Disconnect();
     }
 
     /// <summary>Called by Unity after a new level was loaded.</summary>
-    public void OnLevelWasLoaded(int level)
+    protected void OnLevelWasLoaded(int level)
     {
         PhotonNetwork.networkingPeer.NewSceneLoaded();
-    }
 
-    public static void StartThread()
-    {
-        System.Threading.Thread sendThread = new System.Threading.Thread(new System.Threading.ThreadStart(MyThread));
-        sendThread.Start();
-    }
-
-    // keeps connection alive while loading
-    public static void MyThread()
-    {
-        while (PhotonNetwork.networkingPeer != null && PhotonNetwork.networkingPeer.IsSendingOnlyAcks)
+        if (PhotonNetwork.automaticallySyncScene)
         {
-            while (PhotonNetwork.networkingPeer.SendOutgoingCommands())
-            {
-            }
-
-            System.Threading.Thread.Sleep(200);
+            this.SetSceneInProps();
         }
+    }
+
+    protected void OnJoinedRoom()
+    {
+        PhotonNetwork.networkingPeer.AutomaticallySyncScene();
+    }
+
+    protected void OnCreatedRoom()
+    {
+        if (PhotonNetwork.automaticallySyncScene)
+        {
+            this.SetSceneInProps();
+        }
+    }
+
+    protected internal void SetSceneInProps()
+    {
+        if (PhotonNetwork.isMasterClient)
+        {
+            Hashtable setScene = new Hashtable();
+            setScene[NetworkingPeer.CurrentSceneProperty] = Application.loadedLevelName;
+            PhotonNetwork.room.SetCustomProperties(setScene);
+        }
+    }
+
+    public static void StartFallbackSendAckThread()
+    {
+        if (sendThreadShouldRun)
+        {
+            return;
+        }
+
+        sendThreadShouldRun = true;
+        SupportClass.CallInBackground(FallbackSendAckThread);   // thread will call this every 100ms until method returns false
+    }
+
+    public static void StopFallbackSendAckThread()
+    {
+        sendThreadShouldRun = false;
+    }
+
+    public static bool FallbackSendAckThread()
+    {
+        if (sendThreadShouldRun && PhotonNetwork.networkingPeer != null)
+        {
+            PhotonNetwork.networkingPeer.SendAcksOnly();
+        }
+
+        return sendThreadShouldRun;
     }
 
     #region Implementation of IPhotonPeerListener

@@ -7,10 +7,9 @@
 // </summary>
 // <author>developer@exitgames.com</author>
 // ----------------------------------------------------------------------------
-using System;
-using System.Collections;
+
 using ExitGames.Client.Photon;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
+
 
 /// <summary>
 /// This class resembles a room that PUN joins (or joined).
@@ -188,15 +187,22 @@ public class Room : RoomInfo
     }
 
     /// <summary>
-    /// Updates the custom properties of this Room with propertiesToSet.
-    /// Only string-typed keys are applied, new properties (string keys) are added, existing are updated
-    /// and if a value is set to null, this will remove the custom property.
+    /// Updates and synchronizes the named properties of this Room with the values of propertiesToSet.
     /// </summary>
     /// <remarks>
-    /// This method requires you to be connected and be in a room. Otherwise, the local data is updated only as no remote players are known.
-    /// Local cache is updated immediately, other players are updated through Photon with a fitting operation.
+    /// Any player can set a Room's properties. Room properties are available until changed, deleted or 
+    /// until the last player leaves the room.
+    /// Access them by: Room.CustomProperties (read-only!).
+    /// 
+    /// New properties are added, existing values are updated.
+    /// Other values will not be changed, so only provide values that changed or are new.
+    /// To delete a named (custom) property of this room, use null as value.
+    /// Only string-typed keys are applied (everything else is ignored).
+    /// 
+    /// Local cache is updated immediately, other clients are updated through Photon with a fitting operation.
+    /// To reduce network traffic, set only values that actually changed.
     /// </remarks>
-    /// <param name="propertiesToSet"></param>
+    /// <param name="propertiesToSet">Hashtable of props to udpate, set and sync. See description.</param>
     public void SetCustomProperties(Hashtable propertiesToSet)
     {
         if (propertiesToSet == null)
@@ -210,6 +216,7 @@ public class Room : RoomInfo
 
         // send (sync) these new values
         Hashtable customProps = propertiesToSet.StripToStringKeys() as Hashtable;
-        PhotonNetwork.networkingPeer.OpSetCustomPropertiesOfRoom(customProps, true, 0);
+		PhotonNetwork.networkingPeer.OpSetCustomPropertiesOfRoom(customProps, true, 0);
+		NetworkingPeer.SendMonoMessage(PhotonNetworkingMessage.OnPhotonCustomRoomPropertiesChanged);
     }
 }

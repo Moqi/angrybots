@@ -7,16 +7,28 @@
 // </summary>
 // <author>developer@exitgames.com</author>
 // ----------------------------------------------------------------------------
+
 using System.Collections;
-using ExitGames.Client.Photon;
 using UnityEngine;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using SupportClass = ExitGames.Client.Photon.SupportClass;
+
 
 /// <summary>
 /// This static class defines some useful extension methods for several existing classes (e.g. Vector3, float and others).
 /// </summary>
 public static class Extensions
 {
+    public static PhotonView[] GetPhotonViewsInChildren(this UnityEngine.GameObject go)
+    {
+        return go.GetComponentsInChildren<PhotonView>(true) as PhotonView[];
+    }
+
+    public static PhotonView GetPhotonView(this UnityEngine.GameObject go)
+    {
+        return go.GetComponent<PhotonView>() as PhotonView;
+    }
+
     /// <summary>compares the square magniture of target - second to given float value</summary>
     public static bool AlmostEquals(this Vector3 target, Vector3 second, float sqrMagniturePrecision)
     {
@@ -120,7 +132,7 @@ public static class Extensions
 
     /// <summary>
     /// This removes all key-value pairs that have a null-reference as value.
-    /// In Photon properties are removed by setting their value to null.
+    /// Photon properties are removed by setting their value to null.
     /// Changes the original passed IDictionary!
     /// </summary>
     /// <param name="original">The IDictionary to strip of keys with null-values.</param>
@@ -148,6 +160,11 @@ public static class Extensions
     /// <returns>True if nr was found in target.</returns>
     public static bool Contains(this int[] target, int nr)
     {
+        if (target == null)
+        {
+            return false;
+        }
+
         for (int index = 0; index < target.Length; index++)
         {
             if (target[index] == nr)

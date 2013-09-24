@@ -8,12 +8,12 @@
 // <author>developer@exitgames.com</author>
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using ExitGames.Client.Photon;
 using ExitGames.Client.Photon.Lite;
+using System;
+using System.Collections.Generic;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+
 
 /// <summary>
 /// Internally used by PUN, a LoadbalancingPeer provides the operations and enum 
@@ -81,21 +81,25 @@ internal class LoadbalancingPeer : PhotonPeer
 
         Dictionary<byte, object> op = new Dictionary<byte, object>();
         op[ParameterCode.GameProperties] = gameProperties;
-        op[ParameterCode.PlayerProperties] = customPlayerProperties;
         op[ParameterCode.Broadcast] = true;
+
+        if (customPlayerProperties != null)
+        {
+            op[ParameterCode.PlayerProperties] = customPlayerProperties;
+        }
 
         if (!string.IsNullOrEmpty(gameID))
         {
             op[ParameterCode.RoomName] = gameID;
         }
 
+        // server's default is 'false', so we actually only need to send this when 'true'
         if (autoCleanUp)
         {
             op[ParameterCode.CleanupCacheOnLeave] = autoCleanUp;
             gameProperties[GameProperties.CleanupCacheOnLeave] = autoCleanUp;
         }
 
-        Listener.DebugReturn(DebugLevel.INFO, OperationCode.CreateGame + ": " + SupportClass.DictionaryToString(op));
         return this.OpCustom(OperationCode.CreateGame, op, true);
     }
 
@@ -129,21 +133,73 @@ internal class LoadbalancingPeer : PhotonPeer
         return this.OpCustom(OperationCode.JoinGame, op, true);
     }
 
-    /// <remarks>the hashtable is (optionally) used to filter games: only those that fit the contained custom properties will be matched.</remarks>
-    public virtual bool OpJoinRandomRoom(Hashtable expectedGameProperties)
+    /// <summary>
+    /// Operation to join a random, available room. Overloads take additional player properties.
+    /// This is an async request which triggers a OnOperationResponse() call.
+    /// If all rooms are closed or full, the OperationResponse will have a returnCode of ErrorCode.NoRandomMatchFound.
+    /// If successful, the OperationResponse contains a gameserver address and the name of some room.
+    /// </summary>
+    /// <param name="expectedCustomRoomProperties">Optional. A room will only be joined, if it matches these custom properties (with string keys).</param>
+    /// <param name="expectedMaxPlayers">Filters for a particular maxplayer setting. Use 0 to accept any maxPlayer value.</param>
+    /// <param name="playerProperties">This player's properties (custom and well known).</param>
+    /// <param name="matchingType">Selects one of the available matchmaking algorithms. See MatchmakingMode enum for options.</param>
+    /// <returns>If the operation could be sent currently (requires connection).</returns>
+    public virtual bool OpJoinRandomRoom(Hashtable expectedCustomRoomProperties, byte expectedMaxPlayers, Hashtable playerProperties, MatchmakingMode matchingType)
     {
         if (this.DebugOut >= DebugLevel.INFO)
         {
             this.Listener.DebugReturn(DebugLevel.INFO, "OpJoinRandomRoom()");
         }
 
-        Dictionary<byte, object> op = new Dictionary<byte, object>();
-        if (expectedGameProperties != null && expectedGameProperties.Count > 0)
+        Hashtable expectedRoomProperties = new Hashtable();
+        expectedRoomProperties.MergeStringKeys(expectedCustomRoomProperties);
+        if (expectedMaxPlayers > 0)
         {
-            op[ParameterCode.GameProperties] = expectedGameProperties;
+            expectedRoomProperties[GameProperties.MaxPlayers] = expectedMaxPlayers;
         }
-        
-        return this.OpCustom(OperationCode.JoinRandomGame, op, true);
+
+        Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
+        if (expectedRoomProperties.Count > 0)
+        {
+            opParameters[ParameterCode.GameProperties] = expectedRoomProperties;
+        }
+
+        if (playerProperties != null && playerProperties.Count > 0)
+        {
+            opParameters[ParameterCode.PlayerProperties] = playerProperties;
+        }
+
+        if (matchingType != MatchmakingMode.FillRoom)
+        {
+            opParameters[ParameterCode.MatchMakingType] = (byte)matchingType;
+        }
+
+        return this.OpCustom(OperationCode.JoinRandomGame, opParameters, true);
+    }
+
+    /// <summary>
+    /// Request the rooms and online status for a list of friends (each client must set a unique username via OpAuthenticate).
+    /// </summary>
+    /// <remarks>
+    /// Used on Master Server to find the rooms played by a selected list of users.
+    /// Users identify themselves by using OpAuthenticate with a unique username.
+    /// The list of usernames must be fetched from some other source (not provided by Photon).
+    /// 
+    /// The server response includes 2 arrays of info (each index matching a friend from the request):
+    /// ParameterCode.FindFriendsResponseOnlineList = bool[] of online states
+    /// ParameterCode.FindFriendsResponseRoomIdList = string[] of room names (empty string if not in a room)
+    /// </remarks>
+    /// <param name="friendsToFind">Array of friend's names (make sure they are unique).</param>
+    /// <returns>If the operation could be sent (requires connection).</returns>
+    public virtual bool OpFindFriends(string[] friendsToFind)
+    {
+        Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
+        if (friendsToFind != null && friendsToFind.Length > 0)
+        {
+            opParameters[ParameterCode.FindFriendsRequestList] = friendsToFind;
+        }
+
+        return this.OpCustom(OperationCode.FindFriends, opParameters, true);
     }
 
     public bool OpSetCustomPropertiesOfActor(int actorNr, Hashtable actorProperties, bool broadcast, byte channelId)
@@ -156,6 +212,15 @@ internal class LoadbalancingPeer : PhotonPeer
         if (this.DebugOut >= DebugLevel.INFO)
         {
             this.Listener.DebugReturn(DebugLevel.INFO, "OpSetPropertiesOfActor()");
+        }
+
+        if (actorNr <= 0 || actorProperties == null)
+        {
+            if (this.DebugOut >= DebugLevel.INFO)
+            {
+                this.Listener.DebugReturn(DebugLevel.INFO, "OpSetPropertiesOfActor not sent. ActorNr must be > 0 and actorProperties != null.");
+            }
+            return false;
         }
             
         Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
@@ -200,15 +265,19 @@ internal class LoadbalancingPeer : PhotonPeer
 
     /// <summary>
     /// Sends this app's appId and appVersion to identify this application server side.
+    /// This is an async request which triggers a OnOperationResponse() call.
     /// </summary>
     /// <remarks>
-    /// This operation makes use of encryption, if it's established beforehand.
+    /// This operation makes use of encryption, if that is established before.
     /// See: EstablishEncryption(). Check encryption with IsEncryptionAvailable.
+    /// This operation is allowed only once per connection (multiple calls will have ErrorCode != Ok).
     /// </remarks>
-    /// <param name="appId"></param>
-    /// <param name="appVersion"></param>
+    /// <param name="appId">Your application's name or ID to authenticate. This is assigned by Photon Cloud (webpage).</param>
+    /// <param name="appVersion">The client's version (clients with differing client appVersions are separated and players don't meet).</param>
+    /// <param name="userId"></param>
+    /// <param name="authValues"></param>
     /// <returns>If the operation could be sent (has to be connected).</returns>
-    public virtual bool OpAuthenticate(string appId, string appVersion)
+    public virtual bool OpAuthenticate(string appId, string appVersion, string userId, AuthenticationValues authValues)
     {
         if (this.DebugOut >= DebugLevel.INFO)
         {
@@ -219,7 +288,153 @@ internal class LoadbalancingPeer : PhotonPeer
         opParameters[ParameterCode.AppVersion] = appVersion;
         opParameters[ParameterCode.ApplicationId] = appId;
 
+        if (!string.IsNullOrEmpty(userId))
+        {
+            opParameters[ParameterCode.UserId] = userId;
+        }
+
+        if (authValues != null && authValues.AuthType != CustomAuthenticationType.None)
+        {
+            if (!this.IsEncryptionAvailable)
+            {
+                this.Listener.DebugReturn(DebugLevel.ERROR, "OpAuthenticate() failed. When you want Custom Authentication encryption is mandatory.");
+                return false;
+            }
+
+            opParameters[ParameterCode.ClientAuthenticationType] = (byte)authValues.AuthType;
+            if (!string.IsNullOrEmpty(authValues.Secret))
+            {
+                opParameters[ParameterCode.Secret] = authValues.Secret;
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(authValues.AuthParameters))
+                {
+                    opParameters[ParameterCode.ClientAuthenticationParams] = authValues.AuthParameters;
+                }
+                if (authValues.AuthPostData != null)
+                {
+                    opParameters[ParameterCode.ClientAuthenticationData] = authValues.AuthPostData;
+                }
+            }
+        }
+
         return this.OpCustom(OperationCode.Authenticate, opParameters, true, (byte)0, this.IsEncryptionAvailable);
+    }
+
+
+    /// <summary>
+    /// Operation to handle this client's interest groups (for events in room).
+    /// </summary>
+    /// <remarks>
+    /// Note the difference between passing null and byte[0]:
+    ///   null won't add/remove any groups.
+    ///   byte[0] will add/remove all (existing) groups.
+    /// First, removing groups is executed. This way, you could leave all groups and join only the ones provided.
+    /// </remarks>
+    /// <param name="groupsToRemove">Groups to remove from interest. Null will not remove any. A byte[0] will remove all.</param>
+    /// <param name="groupsToAdd">Groups to add to interest. Null will not add any. A byte[0] will add all current.</param>
+    /// <returns></returns>
+    public virtual bool OpChangeGroups(byte[] groupsToRemove, byte[] groupsToAdd)
+    {        
+        if (this.DebugOut >= DebugLevel.ALL)
+        {
+            this.Listener.DebugReturn(DebugLevel.ALL, "OpChangeGroups()");
+        }
+
+        Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
+        if (groupsToRemove != null)
+        {
+            opParameters[(byte)LiteOpKey.Remove] = groupsToRemove;
+        }
+        if (groupsToAdd != null)
+        {
+            opParameters[(byte)LiteOpKey.Add] = groupsToAdd;
+        }
+
+        return this.OpCustom((byte)LiteOpCode.ChangeGroups, opParameters, true, 0);
+    }
+
+
+    /// <summary>
+    /// Send an event with custom code/type and any content to the other players in the same room.
+    /// </summary>
+    /// <remarks>This override explicitly uses another parameter order to not mix it up with the implementation for Hashtable only.</remarks>
+    /// <param name="eventCode">Identifies this type of event (and the content). Your game's event codes can start with 0.</param>
+    /// <param name="sendReliable">If this event has to arrive reliably (potentially repeated if it's lost).</param>
+    /// <param name="customEventContent">Any serializable datatype (including Hashtable like the other OpRaiseEvent overloads).</param>
+    /// <returns>If operation could be enqueued for sending. Sent when calling: Service or SendOutgoingCommands.</returns>
+    public virtual bool OpRaiseEvent(byte eventCode, bool sendReliable, object customEventContent)
+    {
+        return this.OpRaiseEvent(eventCode, sendReliable, customEventContent, 0, EventCaching.DoNotCache, null, ReceiverGroup.Others, 0);
+    }
+
+    /// <summary>
+    /// Send an event with custom code/type and any content to the other players in the same room.
+    /// </summary>
+    /// <remarks>This override explicitly uses another parameter order to not mix it up with the implementation for Hashtable only.</remarks>
+    /// <param name="eventCode">Identifies this type of event (and the content). Your game's event codes can start with 0.</param>
+    /// <param name="sendReliable">If this event has to arrive reliably (potentially repeated if it's lost).</param>
+    /// <param name="customEventContent">Any serializable datatype (including Hashtable like the other OpRaiseEvent overloads).</param>
+    /// <param name="channelId">Command sequence in which this command belongs. Must be less than value of ChannelCount property. Default: 0.</param>
+    /// <param name="cache">Affects how the server will treat the event caching-wise. Can cache events for players joining later on or remove previously cached events. Default: DoNotCache.</param>
+    /// <param name="targetActors">List of ActorNumbers (in this room) to send the event to. Overrides caching. Default: null.</param>
+    /// <param name="receivers">Defines a target-player group. Default: Others.</param>
+    /// <param name="interestGroup">Defines to which interest group the event is sent. Players can subscribe or unsibscribe to groups. Group 0 is always sent to all. Default: 0.</param>
+    /// <returns>If operation could be enqueued for sending. Sent when calling: Service or SendOutgoingCommands.</returns>
+    public virtual bool OpRaiseEvent(byte eventCode, bool sendReliable, object customEventContent, byte channelId, EventCaching cache, int[] targetActors, ReceiverGroup receivers, byte interestGroup)
+    {
+        Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
+        opParameters[(byte)LiteOpKey.Code] = (byte)eventCode;
+
+        if (customEventContent != null)
+        {
+            opParameters[(byte)LiteOpKey.Data] = customEventContent;
+        }
+        if (cache != EventCaching.DoNotCache)
+        {
+            opParameters[(byte)LiteOpKey.Cache] = (byte)cache;
+        }
+        if (receivers != ReceiverGroup.Others)
+        {
+            opParameters[(byte)LiteOpKey.ReceiverGroup] = (byte)receivers;
+        }
+        if (interestGroup != 0)
+        {
+            opParameters[(byte)LiteOpKey.Group] = (byte)interestGroup;
+        }
+        if (targetActors != null)
+        {
+            opParameters[(byte)LiteOpKey.ActorList] = targetActors;
+        }
+
+        return this.OpCustom((byte)LiteOpCode.RaiseEvent, opParameters, sendReliable, channelId, false);
+    }
+
+    /// <summary>
+    /// Send your custom data as event to an "interest group" in the current Room.
+    /// </summary>
+    /// <remarks>
+    /// No matter if reliable or not, when an event is sent to a interest Group, some users won't get this data.
+    /// Clients can control the groups they are interested in by using OpChangeGroups.
+    /// </remarks>
+    /// <param name="eventCode">Identifies this type of event (and the content). Your game's event codes can start with 0.</param>
+    /// <param name="interestGroup">The ID of the interest group this event goes to (exclusively).</param>
+    /// <param name="customEventContent">Custom data you want to send along (use null, if none).</param>
+    /// <param name="sendReliable">If this event has to arrive reliably (potentially repeated if it's lost).</param>
+    /// <param name="channelId">The "channel" to which this event should belong. Per channel, the sequence is kept in order.</param>
+    /// <returns>If operation could be enqueued for sending</returns>
+    public virtual bool OpRaiseEvent(byte eventCode, byte interestGroup, Hashtable customEventContent, bool sendReliable, byte channelId)
+    {
+        Dictionary<byte, object> opParameters = new Dictionary<byte, object>();
+        opParameters[(byte)LiteOpKey.Data] = customEventContent;
+        opParameters[(byte)LiteOpKey.Code] = (byte)eventCode;
+        if (interestGroup != (byte)0)
+        {
+            opParameters[(byte)LiteOpKey.Group] = (byte)interestGroup;
+        }
+
+        return this.OpCustom((byte)LiteOpCode.RaiseEvent, opParameters, sendReliable, channelId);
     }
 
     /// <summary>
@@ -332,56 +547,81 @@ public class ErrorCode
     /// <summary>(0) is always "OK", anything else an error or specific situation.</summary>
     public const int Ok = 0;
 
-    // server core errors are negative
+    // server - Photon low(er) level: <= 0
 
     /// <summary>
-    /// Operation can't be executed yet (e.g. OpJoin can't be called before being authenticated, RaiseEvent cant be used before getting into a room).
+    /// (-3) Operation can't be executed yet (e.g. OpJoin can't be called before being authenticated, RaiseEvent cant be used before getting into a room).
     /// </summary>
     /// <remarks>
     /// Before you call any operations on the Cloud servers, the automated client workflow must complete its authorization.
     /// In PUN, wait until State is: JoinedLobby (with AutoJoinLobby = true) or ConnectedToMaster (AutoJoinLobby = false)
     /// </remarks>
     public const int OperationNotAllowedInCurrentState = -3;
-    
-    /// <summary>The operation you called is not implemented on the server (application) you connect to. Make sure you run the fitting applications.</summary>
+
+    /// <summary>(-2) The operation you called is not implemented on the server (application) you connect to. Make sure you run the fitting applications.</summary>
     public const int InvalidOperationCode = -2;
-    
-    /// <summary>Something went wrong in the server. Try to reproduce and contact Exit Games.</summary>
+
+    /// <summary>(-1) Something went wrong in the server. Try to reproduce and contact Exit Games.</summary>
     public const int InternalServerError = -1;
 
     // server - PhotonNetwork: 0x7FFF and down
     // logic-level error codes start with short.max
 
-    /// <summary>Authentication failed. Possible cause: AppId is unknown to Photon (in cloud service).</summary>
+    /// <summary>(32767) Authentication failed. Possible cause: AppId is unknown to Photon (in cloud service).</summary>
     public const int InvalidAuthentication = 0x7FFF;
-    
-    /// <summary>GameId (name) already in use (can't create another). Change name.</summary>
+
+    /// <summary>(32766) GameId (name) already in use (can't create another). Change name.</summary>
     public const int GameIdAlreadyExists = 0x7FFF - 1;
-    
-    /// <summary>Game is full. This can when players took over while you joined the game.</summary>
+
+    /// <summary>(32765) Game is full. This can when players took over while you joined the game.</summary>
     public const int GameFull = 0x7FFF - 2;
-    
-    /// <summary>Game is closed and can't be joined. Join another game.</summary>
+
+    /// <summary>(32764) Game is closed and can't be joined. Join another game.</summary>
     public const int GameClosed = 0x7FFF - 3;
-    
+
     [Obsolete("No longer used, cause random matchmaking is no longer a process.")]
     public const int AlreadyMatched = 0x7FFF - 4;
-    
-    /// <summary>Not in use currently. Used when all game servers are full and this peer is not allowed to switch to any.</summary>
+
+    /// <summary>(32762) Not in use currently.</summary>
     public const int ServerFull = 0x7FFF - 5;
-    
-    /// <summary>Not in use currently.</summary>
+
+    /// <summary>(32761) Not in use currently.</summary>
     public const int UserBlocked = 0x7FFF - 6;
-    
-    /// <summary>Random matchmaking only succeeds if a room exists thats neither closed nor full. Repeat in a few seconds or create a new room.</summary>
+
+    /// <summary>(32760) Random matchmaking only succeeds if a room exists thats neither closed nor full. Repeat in a few seconds or create a new room.</summary>
     public const int NoRandomMatchFound = 0x7FFF - 7;
-    
-    /// <summary>Join can fail if the room (name) is not existing (anymore). This can happen when players leave while you join.</summary>
+
+    /// <summary>(32758) Join can fail if the room (name) is not existing (anymore). This can happen when players leave while you join.</summary>
     public const int GameDoesNotExist = 0x7FFF - 9;
 
-    /// <summary>This player is denied access to the server, because the concurrent user limit is (temporarily) reached.</summary>
-    /// <remarks>When this happens, try again later. You can lift the CCU limits with a new license (when you host yourself) or extended subscription (when using the Photon Cloud).</remarks>
+    /// <summary>(32757) Authorization on the Photon Cloud failed because the concurrent users (CCU) limit of the app's subscription is reached.</summary>
+    /// <remarks>
+    /// Unless you have a plan with "CCU Burst", clients might fail the authentication step during connect. 
+    /// Affected client are unable to call operations. Please note that players who end a game and return 
+    /// to the master server will disconnect and re-connect, which means that they just played and are rejected 
+    /// in the next minute / re-connect.
+    /// This is a temporary measure. Once the CCU is below the limit, players will be able to connect an play again.
+    /// 
+    /// OpAuthorize is part of connection workflow but only on the Photon Cloud, this error can happen. 
+    /// Self-hosted Photon servers with a CCU limited license won't let a client connect at all.
+    /// </remarks>
     public const int MaxCcuReached = 0x7FFF - 10;
+
+    /// <summary>(32756) Authorization on the Photon Cloud failed because the app's subscription does not allow to use a particular region's server.</summary>
+    /// <remarks>
+    /// Some subscription plans for the Photon Cloud are region-bound. Servers of other regions can't be used then.
+    /// Check your master server address and compare it with your Photon Cloud Dashboard's info.
+    /// https://cloud.exitgames.com/dashboard
+    /// 
+    /// OpAuthorize is part of connection workflow but only on the Photon Cloud, this error can happen. 
+    /// Self-hosted Photon servers with a CCU limited license won't let a client connect at all.
+    /// </remarks>
+    public const int InvalidRegion = 0x7FFF - 11;
+
+    /// <summary>
+    /// (32755) Custom Authentication of the user failed due to setup reasons (see Cloud Dashboard) or the provided user data (like username or token). Check error message for details.
+    /// </summary>
+    public const int CustomAuthenticationFailed = 0x7FFF - 12;
 }
 
 
@@ -396,7 +636,6 @@ public class ActorProperties
 {
     /// <summary>(255) Name of a player/actor.</summary>
     public const byte PlayerName = 255; // was: 1
-    public const byte PlayerRoarID = 71;
 }
 
 /// <summary>
@@ -462,30 +701,28 @@ public class ParameterCode
 {
     /// <summary>(230) Address of a (game) server to use.</summary>
     public const byte Address = 230;
-    /// <summary>(229) Count of players in this application in a rooms (used in stats event)</summary>
+    /// <summary>(229) Count of players in rooms (connected to game servers for this application, used in stats event)</summary>
     public const byte PeerCount = 229;
     /// <summary>(228) Count of games in this application (used in stats event)</summary>
     public const byte GameCount = 228;
-    /// <summary>(227) Count of players on the master server (in this app, looking for rooms)</summary>
+    /// <summary>(227) Count of players on the master server (connected to master server for this application, looking for games, used in stats event)</summary>
     public const byte MasterPeerCount = 227;
     /// <summary>(225) User's ID</summary>
     public const byte UserId = 225;
     /// <summary>(224) Your application's ID: a name on your own Photon or a GUID on the Photon Cloud</summary>
     public const byte ApplicationId = 224;
-    /// <summary>(223) Not used currently. If you get queued before connect, this is your position</summary>
+    /// <summary>(223) Not used (as "Position" currently). If you get queued before connect, this is your position</summary>
     public const byte Position = 223;
+    /// <summary>(223) Modifies the matchmaking algorithm used for OpJoinRandom. Allowed parameter values are defined in enum MatchmakingMode.</summary>
+    public const byte MatchMakingType = 223;
     /// <summary>(222) List of RoomInfos about open / listed rooms</summary>
     public const byte GameList = 222;
     /// <summary>(221) Internally used to establish encryption</summary>
     public const byte Secret = 221;
     /// <summary>(220) Version of your application</summary>
     public const byte AppVersion = 220;
-    /// <summary>(210) Internally used in case of hosting by Azure</summary>
-    public const byte AzureNodeInfo = 210;	// only used within events, so use: EventCode.AzureNodeInfo
-    /// <summary>(209) Internally used in case of hosting by Azure</summary>
-    public const byte AzureLocalNodeId = 209;
-    /// <summary>(208) Internally used in case of hosting by Azure</summary>
-    public const byte AzureMasterNodeId = 208;
+
+    // Codes for Azure / TCP Proxy are removed
 
     /// <summary>(255) Code for the gameId/roomName (a unique name per room). Used in OpJoin and similar.</summary>
     public const byte RoomName = (byte)LiteOpKey.GameId;
@@ -519,6 +756,31 @@ public class ParameterCode
     public const byte Cache = (byte)LiteOpKey.Cache;
     /// <summary>(241) Bool parameter of CreateGame Operation. If true, server cleans up roomcache of leaving players (their cached events get removed).</summary>
     public const byte CleanupCacheOnLeave = (byte)241;
+
+    /// <summary>(240) Code for "group" operation-parameter (as used in Op RaiseEvent).</summary>
+    public const byte Group = LiteOpKey.Group;
+    /// <summary>(239) The "Remove" operation-parameter can be used to remove something from a list. E.g. remove groups from player's interest groups.</summary>
+    public const byte Remove = LiteOpKey.Remove;
+    /// <summary>(238) The "Add" operation-parameter can be used to add something to some list or set. E.g. add groups to player's interest groups.</summary>
+    public const byte Add = LiteOpKey.Add;
+
+    /// <summary>(217) This key's (byte) value defines the target custom authentication type/service the client connects with. Used in OpAuthenticate</summary>
+    public const byte ClientAuthenticationType = 217;
+
+    /// <summary>(216) This key's (string) value provides parameters sent to the custom authentication type/service the client connects with. Used in OpAuthenticate</summary>
+    public const byte ClientAuthenticationParams = 216;
+
+    /// <summary>(214) This key's (string or byte[]) value provides parameters sent to the custom authentication service setup in Photon Dashboard. Used in OpAuthenticate</summary>
+    public const byte ClientAuthenticationData = 214;
+
+    /// <summary>(1) Used in Op FindFriends request. Value must be string[] of friends to look up.</summary>
+    public const byte FindFriendsRequestList = (byte)1;
+
+    /// <summary>(1) Used in Op FindFriends response. Contains bool[] list of online states (false if not online).</summary>
+    public const byte FindFriendsResponseOnlineList = (byte)1;
+
+    /// <summary>(2) Used in Op FindFriends response. Contains string[] of room names ("" where not known or no room joined).</summary>
+    public const byte FindFriendsResponseRoomIdList = (byte)2;
 }
 
 /// <summary>
@@ -542,6 +804,7 @@ public class OperationCode
 
     // public const byte CancelJoinRandom = 224; // obsolete, cause JoinRandom no longer is a "process". now provides result immediately
 
+    /// <summary>(254) Code for OpLeave, to get out of a room.</summary>
     public const byte Leave = (byte)LiteOpCode.Leave;
     /// <summary>(253) Raise event (in a room, for other actors/players)</summary>
     public const byte RaiseEvent = (byte)LiteOpCode.RaiseEvent;
@@ -549,4 +812,96 @@ public class OperationCode
     public const byte SetProperties = (byte)LiteOpCode.SetProperties;
     /// <summary>(251) Get Properties</summary>
     public const byte GetProperties = (byte)LiteOpCode.GetProperties;
+
+    /// <summary>(248) Operation code to change interest groups in Rooms (Lite application and extending ones).</summary>
+    public const byte ChangeGroups = (byte)LiteOpCode.ChangeGroups;
+
+    /// <summary>(222) Request the rooms and online status for a list of friends (by name, which should be unique).</summary>
+    public const byte FindFriends = 222;
+}
+
+/// <summary>
+/// Options for matchmaking rules for OpJoinRandom.
+/// </summary>
+public enum MatchmakingMode : byte
+{
+    /// <summary>Fills up rooms (oldest first) to get players together as fast as possible. Default.</summary>
+    /// <remarks>Makes most sense with MaxPlayers > 0 and games that can only start with more players.</remarks>
+    FillRoom = 0,
+    /// <summary>Distributes players across available rooms sequentially but takes filter into account. Without filter, rooms get players evenly distributed.</summary>
+    SerialMatching = 1,
+    /// <summary>Joins a (fully) random room. Expected properties must match but aside from this, any available room might be selected.</summary>
+    RandomMatching = 2
+}
+
+/// <summary>
+/// Options for optional "Custom Authentication" services used with Photon. Used by OpAuthenticate after connecting to Photon.
+/// </summary>
+public enum CustomAuthenticationType : byte
+{
+    /// <summary>Use a custom authentification service. Currently the only implemented option.</summary>
+    Custom = 0,
+
+    /// <summary>Authenticates users by their Steam Account. Set auth values accordingly!</summary>
+    Steam = 1,
+
+    /// <summary>Authenticates users by their Facebook Account. Set auth values accordingly!</summary>
+    Facebook = 2,
+
+    /// <summary>Disables custom authentification. Same as not providing any AuthenticationValues for connect (more precisely for: OpAuthenticate).</summary>
+    None = byte.MaxValue
+}
+
+/// <summary>
+/// Container for "Custom Authentication" values in Photon (default: user and token). Set AuthParameters before connecting - all else is handled.
+/// </summary>
+/// <remarks>
+/// Custom Authentication lets you verify end-users by some kind of login or token. It sends those
+/// values to Photon which will verify them before granting access or disconnecting the client.
+/// 
+/// The Photon Cloud Dashboard will let you enable this feature and set important server values for it.
+/// https://cloud.exitgames.com/dashboard
+/// </remarks>
+public class AuthenticationValues
+{
+    /// <summary>The type of custom authentication provider that should be used. Currently only "Custom" or "None" (turns this off).</summary>
+    public CustomAuthenticationType AuthType = CustomAuthenticationType.Custom;
+
+    /// <summary>This string must contain any (http get) parameters expected by the used authentication service. By default, username and token.</summary>
+    /// <remarks>Standard http get parameters are used here and passed on to the service that's defined in the server (Photon Cloud Dashboard).</remarks>
+    public string AuthParameters;
+
+    /// <summary>After initial authentication, Photon provides a secret for this client / user, which is subsequently used as (cached) validation.</summary>
+    public string Secret;
+
+    /// <summary>Data to be passed-on to the auth service via POST. Default: null (not sent). Either string or byte[] (see setters).</summary>
+    public object AuthPostData { get; private set; }
+
+    /// <summary>Sets the data to be passed-on to the auth service via POST.</summary>
+    /// <param name="byteData">Binary token / auth-data to pass on. Empty string will set AuthPostData to null.</param>
+    public virtual void SetAuthPostData(string stringData)
+    {
+        this.AuthPostData = (string.IsNullOrEmpty(stringData)) ? null : stringData;
+    }
+
+    /// <summary>Sets the data to be passed-on to the auth service via POST.</summary>
+    /// <param name="byteData">Binary token / auth-data to pass on.</param>
+    public virtual void SetAuthPostData(byte[] byteData)
+    {
+        this.AuthPostData = byteData;
+    }
+
+    /// <summary>Creates the default parameter string from a user and token value, escaping both. Alternatively set AuthParameters yourself.</summary>
+    /// <remarks>The default parameter string is: "username={user}&token={token}"</remarks>
+    /// <param name="user">Name or other end-user ID used in custom authentication service.</param>
+    /// <param name="token">Token provided by authentication service to be used on initial "login" to Photon.</param>
+    public virtual void SetAuthParameters(string user, string token)
+    {
+        this.AuthParameters = "username=" + System.Uri.EscapeDataString(user) + "&token=" + System.Uri.EscapeDataString(token);
+    }
+
+    public override string ToString()
+    {
+        return AuthParameters + " s: " + Secret;
+    }
 }

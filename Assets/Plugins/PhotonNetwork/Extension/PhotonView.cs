@@ -7,8 +7,14 @@
 // </summary>
 // <author>developer@exitgames.com</author>
 // ----------------------------------------------------------------------------
+
 using UnityEngine;
-using System.Collections;
+using System.Reflection;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 
 public enum ViewSynchronization { Off, ReliableDeltaCompressed, Unreliable }
 public enum OnSerializeTransform { OnlyPosition, OnlyRotation, OnlyScale, PositionAndRotation, All }
@@ -18,26 +24,63 @@ public enum OnSerializeRigidBody { OnlyVelocity, OnlyAngularVelocity, All }
 /// PUN's NetworkView replacement class for networking. Use it like a NetworkView.
 /// </summary>
 /// \ingroup publicApi
-[AddComponentMenu("Miscellaneous/Photon View")]
+[AddComponentMenu("Miscellaneous/Photon View &v")]
 public class PhotonView : Photon.MonoBehaviour
 {
-    //Save scene ID in serializable INT (only changable via Editor)
-    [SerializeField]
-    private int sceneViewID = 0;
 
-    [SerializeField]
-    private PhotonViewID ID = new PhotonViewID(0, null);
+#if UNITY_EDITOR
+    [ContextMenu("Open PUN Wizard")]
+    void OpenPunWizard()
+    {
+        EditorApplication.ExecuteMenuItem("Window/Photon Unity Networking");
+    }
+#endif
 
-    public Component observed;
-    public ViewSynchronization synchronization;
+    public int subId;
+
+    public int ownerId;
+    
     public int group = 0;
-    public short prefix = -1;
+
+
+    // NOTE: this is now an integer because unity won't serialize short (needed for instantiation). we SEND only a short though!
+    // NOTE: prefabs have a prefixBackup of -1. this is replaced with any currentLevelPrefix that's used at runtime. instantiated GOs get their prefix set pre-instantiation (so those are not -1 anymore)
+    public int prefix   
+    {
+        get
+        {
+            if (this.prefixBackup == -1 && PhotonNetwork.networkingPeer != null)
+            {
+                this.prefixBackup = PhotonNetwork.networkingPeer.currentLevelPrefix;
+            }
+
+            return this.prefixBackup;
+        }
+        set { this.prefixBackup = value; }
+    } 
+
+    // this field is serialized by unity. that means it is copied when instantiating a persistent obj into the scene
+    public int prefixBackup = -1;
 
     /// <summary>
     /// This is the instantiationData that was passed when calling PhotonNetwork.Instantiate* (if that was used to spawn this prefab)
     /// </summary>
-    public object[] instantiationData = null;
-    
+    public object[] instantiationData
+    {
+        get 
+        {
+            if (!this.didAwake)
+            {
+                // even though viewID and instantiationID are setup before the GO goes live, this data can't be set. as workaround: fetch it if needed
+                this.instantiationDataField = PhotonNetwork.networkingPeer.FetchInstantiationData(this.instantiationId);
+            }
+            return this.instantiationDataField;
+        }
+        set { this.instantiationDataField = value; }
+    }
+
+    private object[] instantiationDataField;
+
     /// <summary>
     /// For internal use only, don't use
     /// </summary>
@@ -46,78 +89,61 @@ public class PhotonView : Photon.MonoBehaviour
     /// <summary>
     /// For internal use only, don't use
     /// </summary>
-    protected internal object[] lastOnSerializeDataReceived = null; 
+    protected internal object[] lastOnSerializeDataReceived = null;
+
+    public Component observed;
+
+    public ViewSynchronization synchronization;
     
     public OnSerializeTransform onSerializeTransformOption = OnSerializeTransform.PositionAndRotation;
     
     public OnSerializeRigidBody onSerializeRigidBodyOption = OnSerializeRigidBody.All;
-    
-    private bool registeredPhotonView = false;
 
-    public PhotonViewID viewID
+    public int viewID
     {
-        get
-        {
-            if (!this.ranSetup)
-            {
-                this.Setup();
-            }
-
-            if (this.ID.ID < 1 && this.sceneViewID > 0)
-            {   
-                // Load the correct scene ID
-                this.ID = new PhotonViewID(this.sceneViewID, null);
-            }
-
-            return this.ID;
-        }
-
+        get { return ownerId * PhotonNetwork.MAX_VIEW_IDS + subId; }
         set
         {
-            if (!this.ranSetup)
-            {
-                this.Setup();
-            }
+            // if ID was 0 for an awakened PhotonView, the view should add itself into the networkingPeer.photonViewList after setup
+            bool viewMustRegister = this.didAwake && this.subId == 0;
 
-            if (this.registeredPhotonView && PhotonNetwork.networkingPeer != null)
-            {
-                PhotonNetwork.networkingPeer.RemovePhotonView(this, true);
-            }
+            // TODO: decide if a viewID can be changed once it wasn't 0. most likely that is not a good idea
+            // check if this view is in networkingPeer.photonViewList and UPDATE said list (so we don't keep the old viewID with a reference to this object)
+            // PhotonNetwork.networkingPeer.RemovePhotonView(this, true);
 
-            this.ID = value;
-            if (PhotonNetwork.networkingPeer != null)
+            this.ownerId = value / PhotonNetwork.MAX_VIEW_IDS;
+
+            this.subId = value % PhotonNetwork.MAX_VIEW_IDS;
+
+            if (viewMustRegister)
             {
                 PhotonNetwork.networkingPeer.RegisterPhotonView(this);
-                this.registeredPhotonView = true;
             }
+            //Debug.Log("Set viewID: " + value + " ->  owner: " + this.ownerId + " subId: " + this.subId);
         }
     }
 
-    public override string ToString()
-    {
-        return string.Format("View {0} on {1} {2}", this.ID.ID, this.gameObject.name, (this.isSceneView) ? "(scene)" : string.Empty);
-    }
+    public int instantiationId; // if the view was instantiated with a GO, this GO has a instantiationID (first view's viewID)
 
+    /// <summary>True if the PhotonView was loaded with the scene (game object) or instantiated with InstantiateSceneObject.</summary>
+    /// <remarks>
+    /// Scene objects are not owned by a particular player but belong to the scene. Thus they don't get destroyed when their 
+    /// creator leaves the game and the current Master Client can control them (whoever that is).
+    /// The ownerIs is 0 (player IDs are 1 and up).
+    /// </remarks>
     public bool isSceneView
     {
-        get
-        {
-            return (this.sceneViewID > 0) // Baked in the scene via editor
-                || (this.ID.owner == null && this.ID.ID > 0 && this.ID.ID < PhotonNetwork.MAX_VIEW_IDS); //Spawned via InstantiateSceneobject
-        }
+        get { return this.ownerId == 0; }
     }
 
     public PhotonPlayer owner
     {
-        get
-        {
-            if (!this.ranSetup)
-            {
-                this.Setup();
-            }
+        get { return PhotonPlayer.Find(this.ownerId); }
+    }
 
-            return this.viewID.owner;
-        }
+    public int OwnerActorNr
+    {
+        get { return this.ownerId; }
     }
 
     /// <summary>
@@ -129,94 +155,103 @@ public class PhotonView : Photon.MonoBehaviour
     {
         get
         {
-            if (!this.ranSetup)
-            {
-                this.Setup();
-            }
-
-            return (this.owner == PhotonNetwork.player) || (this.isSceneView && PhotonNetwork.isMasterClient);
+            return (this.ownerId == PhotonNetwork.player.ID) || (this.isSceneView && PhotonNetwork.isMasterClient);
         }
     }
 
-#if UNITY_EDITOR
+    private bool didAwake;
 
-    public void SetSceneID(int newID)
-    {
-        sceneViewID = newID;
-    }
-
-    public int GetSceneID()
-    {
-        return sceneViewID;
-    }
-
-#endif
+    protected internal bool destroyedByPhotonNetworkOrQuit;
 
     /// <summary>Called by Unity on start of the application and does a setup the PhotonView.</summary>
     public void Awake()
     {
-        this.Setup();
+        // registration might be too late when some script (on this GO) searches this view BUT GetPhotonView() can search ALL in that case
+        PhotonNetwork.networkingPeer.RegisterPhotonView(this);
+        
+        this.instantiationDataField = PhotonNetwork.networkingPeer.FetchInstantiationData(this.instantiationId);
+        this.didAwake = true;
     }
 
-    private bool ranSetup = false;
-
-    private void Setup()
+    public void OnApplicationQuit()
     {
-        if (!Application.isPlaying)
+        destroyedByPhotonNetworkOrQuit = true;	// on stop-playing its ok Destroy is being called directly (not by PN.Destroy())
+    }
+
+    public void OnDestroy()
+    {
+        if (!this.destroyedByPhotonNetworkOrQuit)
         {
-            return;
+            PhotonNetwork.networkingPeer.LocalCleanPhotonView(this);
         }
 
-        if (this.ranSetup)
+        if (!this.destroyedByPhotonNetworkOrQuit && !Application.isLoadingLevel)
         {
-            return;
-        }
-        
-        this.ranSetup = true;
-
-        if (this.isSceneView)
-        {
-            bool result = PhotonNetwork.networkingPeer.PhotonViewSetup_FindMatchingRoot(gameObject);
-            if (result)
+            if (this.instantiationId > 0)
             {
-                // This instantiated prefab needs to be corrected as it's incorrectly reported as a sceneview.
-                // It is wrongly reported as isSceneView because a scene-prefab changes have been applied to the project prefab
-                // The scene's prefab viewID is therefore saved to the project prefab. This workaround fixes all problems
-                this.sceneViewID = 0;
+                // if this viewID was not manually assigned (and we're not shutting down or loading a level), you should use PhotonNetwork.Destroy() to get rid of GOs with PhotonViews
+                Debug.LogError("OnDestroy() seems to be called without PhotonNetwork.Destroy()?! GameObject: " + this.gameObject + " Application.isLoadingLevel: " + Application.isLoadingLevel);
             }
             else
             {
-                if (this.sceneViewID < 1)
+                // this seems to be a manually instantiated PV. if it's local, we could warn if the ID is not in the allocated-list
+                if (this.viewID <= 0)
                 {
-                    Debug.LogError("SceneView " + sceneViewID);
+                    Debug.LogWarning(string.Format("OnDestroy manually allocated PhotonView {0}. The viewID is 0. Was it ever (manually) set?", this));
+                } 
+                else if (this.isMine && !PhotonNetwork.manuallyAllocatedViewIds.Contains(this.viewID))
+                {
+                    Debug.LogWarning(string.Format("OnDestroy manually allocated PhotonView {0}. The viewID is local (isMine) but not in manuallyAllocatedViewIds list. Use UnAllocateViewID() after you destroyed the PV.", this));
                 }
-
-                ID = new PhotonViewID(this.sceneViewID, null);
-                this.registeredPhotonView = true;
-                PhotonNetwork.networkingPeer.RegisterPhotonView(this);
             }
         }
-        else
+
+        if (PhotonNetwork.networkingPeer.instantiatedObjects.ContainsKey(this.instantiationId))
         {
-            bool res = PhotonNetwork.networkingPeer.PhotonViewSetup_FindMatchingRoot(gameObject);
-            if (!res)
+            // Unity destroys GOs and PVs at the end of a frame. In worst case, a instantiate created a new view with the same id. Let's compare the associated GameObject.
+            GameObject instGo = PhotonNetwork.networkingPeer.instantiatedObjects[this.instantiationId];
+            bool instanceIsThisOne = (instGo == this.gameObject);
+            if (instanceIsThisOne)
             {
-                if (PhotonNetwork.logLevel != PhotonLogLevel.ErrorsOnly)
-                {
-                    Debug.LogWarning("Warning: Did not find the root of a PhotonView. This is only OK if you used GameObject.Instantiate to instantiate this prefab. Object: " + this.name);
-                }
+                Debug.LogWarning(string.Format("OnDestroy for PhotonView {0} but GO is still in instantiatedObjects. instantiationId: {1}. Use PhotonNetwork.Destroy(). {2} Identical with this: {3} PN.Destroyed called for this PV: {4}", this, this.instantiationId, Application.isLoadingLevel ? "Loading new scene caused this." : "", instanceIsThisOne, destroyedByPhotonNetworkOrQuit));
             }
         }
     }
 
-    void OnDestroy()
+    private MethodInfo OnSerializeMethodInfo;
+
+    private bool failedToFindOnSerialize;
+
+    internal protected void ExecuteOnSerialize(PhotonStream pStream, PhotonMessageInfo info)
     {
-        PhotonNetwork.networkingPeer.RemovePhotonView(this, true);
+        if (failedToFindOnSerialize)
+        {
+            return;
+        }
+
+        if (OnSerializeMethodInfo == null)
+        {
+            if (!NetworkingPeer.GetMethod(this.observed as MonoBehaviour, PhotonNetworkingMessage.OnPhotonSerializeView.ToString(), out OnSerializeMethodInfo))
+            {
+                Debug.LogError("The observed monobehaviour (" + this.observed.name + ") of this PhotonView does not implement OnPhotonSerialize()!");
+                failedToFindOnSerialize = true;
+                return;
+            }
+        }
+
+        OnSerializeMethodInfo.Invoke((object)this.observed, new object[] { pStream, info });
     }
 
     public void RPC(string methodName, PhotonTargets target, params object[] parameters)
     {
-        PhotonNetwork.RPC(this, methodName, target, parameters);
+		if(PhotonNetwork.networkingPeer.hasSwitchedMC && target == PhotonTargets.MasterClient)
+        {
+			PhotonNetwork.RPC(this, methodName, PhotonNetwork.masterClient, parameters);
+		}
+        else
+        {
+        	PhotonNetwork.RPC(this, methodName, target, parameters);
+		}
     }
 
     public void RPC(string methodName, PhotonPlayer targetPlayer, params object[] parameters)
@@ -237,5 +272,10 @@ public class PhotonView : Photon.MonoBehaviour
     public static PhotonView Find(int viewID)
     {
         return PhotonNetwork.networkingPeer.GetPhotonView(viewID);
+    }
+
+    public override string ToString()
+    {
+        return string.Format("View ({3}){0} on {1} {2}", this.viewID, this.gameObject.name, (this.isSceneView) ? "(scene)" : string.Empty, this.prefix);
     }
 }
