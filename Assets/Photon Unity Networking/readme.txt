@@ -1,18 +1,31 @@
 
-Photon Unity Networking
+Photon Unity Networking (PUN)
 	This package is a re-implementation of Unity's Networking, using the Photon Cloud Service.
-	Also included: a setup wizard, demo scene, documentation and editor extensions.
+	Also included: A setup wizard, demo scenes, documentation and editor extensions.
+
+
+Requirements
+	Unity iOS PRO and Unity Android PRO for exports to these platforms
+
+
+Help and Documentation
+	Please read the included pdf.
+	Unity Forum Thread (up to date info): http://forum.unity3d.com/threads/101734-Submitting-Photon-Unity-Networking
+	Exit Games Forum: http://forum.exitgames.com/viewforum.php?f=17
+	Online documentation: http://doc.exitgames.com/photon-cloud
 
 
 Integration
-	This package adds a editor window:
-	Menu -> Windows, Photon Unity Networking
+	This package adds a editor window "PUN Wizard" for connection setup:
+		Menu -> Window -> Photon Unity Networking (shortcut: ALT+P)
+	It also adds a commonly used component "PhotonView" to this menu:
+		Menu -> Component -> Miscellaneous -> PhotonView (shortcut: ALT+V)
+	When imported into a new, empty project, the "PunStartup" script opens the "demo hub" and setup scenes to build.
 
 
-Importing into your project
-	To import this package into your project, skip the folders "Demo Worker" and "MarcoPolo-Tutorial".
-	You can also delete them after import. 
-	Everything important is in the folders "Plugins" and "Editor".
+Clean PUN Import (no demos)
+	To import only the scripts of Photon Unity Networking into an existing project: 
+	skip anything except the folders "Plugins" and "Editor".
 
 
 Server
@@ -22,17 +35,17 @@ Server
 	This service is geared towards room-based games and the server cannot be modified.
 	Read more about it: http://www.exitgamescloud.com
 
-	Alternatively, you can download the server SDK and run your own Photon server.
-	The SDK comes with a complete game logic (ready to run, like in Photon Cloud)
-	but you also get the source code for the game logic to modify and extend it.
+	Alternatively, download the Server SDK and run your own Photon Server.
+	The SDK has the binaries to run immediately but also includes the source code and projects
+	for the game logic. You can use that as basis to modify and extend it.
 	A 100 concurrent user license is free (also for commercial use) per game.
 	Read more about it: http://www.exitgames.com/photon
 
 
 Subscriptions bought in Asset Store
-	Follow these steps, if you bought a package with Photon Cloud Subscription in the Asset Store:
+	Follow these steps, when you bought a package with Photon Cloud Subscription in the Asset Store:
 
-	•	Register a Photon Cloud Account: cloud.exitgames.com
+	•	Register a Photon Cloud Account: https://cloud.exitgames.com/Account/SignUp
 	•	Get your AppID from the Dashboard
 	•	Send a Mail to: developer@exitgames.com
 		With:
@@ -41,25 +54,18 @@ Subscriptions bought in Asset Store
 		o	Photon Cloud AppID
 
 
-Files
-	The files of the Photon Unity Networking package are:
+Important Files
 
 	Documentation
 		PhotonNetwork-Documentation.pdf
+		changelog.txt
+
 	Extensions & Source
 		Editor\PhotonNetwork\*.*
 		Plugins\PhotonNetwork\*.*
 
-	Demo Scene
-		DemoWorker\DemoWorker-Scene.unity
-	Tutorial "Marco Polo"
-		MarcoPolo-Tutorial\
-	
-	The server-setup will be saved as file (when the Wizard was running)
-		Resources\PhotonServerSettings.asset
+	The server-setup will be saved as file (can be moved into any Resources folder and edited in inspector)
+		Photon Unity Networking\Resources\PhotonServerSettings.asset
 
-
-Help and more
-	Please read the included pdf.
-	Exit Games Forum: http://forum.exitgames.com/viewforum.php?f=17
-	Online documentation: http://doc.exitgames.com/photon-cloud
+	Demos
+		All demos are in separate folders. Each has a Demo<name>-Scene.

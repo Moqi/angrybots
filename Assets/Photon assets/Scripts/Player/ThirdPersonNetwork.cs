@@ -1,74 +1,62 @@
 using UnityEngine;
 using System.Collections;
-using Roar;
 
 public class ThirdPersonNetwork : Photon.MonoBehaviour
 {
-    private TextMesh tMesh;
-    private string old_name = "";
-    private string old_roar_key = "";
+    ThirdPersonCamera cameraScript;
+    ThirdPersonController controllerScript;
+
     void Awake()
     {
-        Debug.Log("SPAWN PLAYER");
-        tMesh = gameObject.GetComponentInChildren<TextMesh>();
-    }
-    void Start ()   
-    {		    	
-    	transform.SendMessage ("IsLocalPlayer", photonView.isMine, SendMessageOptions.DontRequireReceiver);
-        
-		if (photonView.isMine)
+        cameraScript = GetComponent<ThirdPersonCamera>();
+        controllerScript = GetComponent<ThirdPersonController>();
+
+         if (photonView.isMine)
         {
-            tMesh.gameObject.active = false;
-            Camera.main.SendMessage("SetLocalPlayerTransform", transform, SendMessageOptions.DontRequireReceiver);
-		
+            //MINE: local player, simply enable the local scripts
+            cameraScript.enabled = true;
+            controllerScript.enabled = true;
+        }
+        else
+        {           
+            cameraScript.enabled = false;
+
+            controllerScript.enabled = true;
+            controllerScript.isControllable = false;
+        }
+
+        gameObject.name = gameObject.name + photonView.viewID;
+    }
+
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.isWriting)
+        {
+            //We own this player: send the others our data
+            stream.SendNext((int)controllerScript._characterState);
+            stream.SendNext(transform.position);
+            stream.SendNext(transform.rotation); 
         }
         else
         {
-            tMesh.text = "sonda"; //photonView.owner.name;
+            //Network player, receive data
+            controllerScript._characterState = (CharacterState)(int)stream.ReceiveNext();
+            correctPlayerPos = (Vector3)stream.ReceiveNext();
+            correctPlayerRot = (Quaternion)stream.ReceiveNext();
         }
-
-
     }
 
+    private Vector3 correctPlayerPos = Vector3.zero; //We lerp towards this
+    private Quaternion correctPlayerRot = Quaternion.identity; //We lerp towards this
 
     void Update()
     {
         if (!photonView.isMine)
         {
-            Vector3 pos = tMesh.transform.position - new Vector3(-10, 5, 10);// Camera.main.transform.position;
-           // pos = tMesh.transform.position + pos;
-            tMesh.transform.LookAt(pos);
-            string new_name = photonView.owner.name;
-            if (new_name != old_name) {
-            	tMesh.text = new_name;
-            	old_name = new_name;
-            	Debug.Log("NAME CHANGE DETECTED [" + new_name + "] <" + photonView.owner.roarid + ">");
-            	if (photonView.owner.roarid != "") {
-            		GameObject friends_widget = GameObject.Find("RoarFriendsWidget");
-            		if (friends_widget != null) {
-            			Debug.Log("WIDGET FOUND");
-            			RoarFriendsListWidget widget = friends_widget.GetComponent<RoarFriendsListWidget>();
-            			if (widget != null) {
-            				Debug.Log("WIDGET SCRIPT FOUND");
-            				widget.insertExternalPlayer(photonView.owner.roarid, new_name);
-            			} else Debug.Log("WIDGET SCRIPT NOT FOUND");
-            			//RoarFriendsListWidget widget = friends_widget.GetComponent(RoarFriendsListWidget) as RoarFriendsListWidget;
-            		} else Debug.Log("WIDGET NOT FOUND");
-            	}
-            }
+            //Update remote player (smooth this, this looks good, at the cost of some accuracy)
+            transform.position = Vector3.Lerp(transform.position, correctPlayerPos, Time.deltaTime * 5);
+            transform.rotation = Quaternion.Lerp(transform.rotation, correctPlayerRot, Time.deltaTime * 5);
         }
     }
-
-    void OnPhotonInstantiate(PhotonMessageInfo info)
-    {       
-        GameManager.AddPlayer(transform);
-        Debug.Log("ADD PLAYER [" + photonView.owner.name + "]");
-    }
-    void OnDestroy()
-    {
-      
-        GameManager.RemovePlayer(transform);
-    }
-   
 
 }

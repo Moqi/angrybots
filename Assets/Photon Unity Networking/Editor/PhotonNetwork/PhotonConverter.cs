@@ -9,24 +9,31 @@
 // ----------------------------------------------------------------------------
 using UnityEngine;
 using UnityEditor;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
 public class PhotonConverter : Photon.MonoBehaviour
 {
-
     public static void RunConversion()
-    {
+    {		
         //Ask if user has made a backup.
-        bool result = EditorUtility.DisplayDialog("Conversion", "Did you create a backup of your project before converting?", "Yes", "Abort conversion");
-        if (!result)
+        int option = EditorUtility.DisplayDialogComplex("Conversion", "Attempt automatic conversion from Unity Networking to Photon Unity Networking \"PUN\"?", "Yes", "No!", "Pick Script Folder");
+        switch (option)
         {
-            return;
+            case 0:
+                break;
+            case 1:
+                return;
+            case 2:
+                PickFolderAndConvertScripts();
+                return;
+            default:
+                return;
         }
+
         //REAAAALY?
-        result = EditorUtility.DisplayDialog("Conversion", "Disclaimer: The code conversion feature is quite crude, but should do it's job well (see the sourcecode). A backup is therefore strongly recommended!", "Yes, I've made a backup: GO", "Abort");
+        bool result = EditorUtility.DisplayDialog("Conversion", "Disclaimer: The code conversion feature is quite crude, but should do it's job well (see the sourcecode). A backup is therefore strongly recommended!", "Yes, I've made a backup: GO", "Abort");
         if (!result)
         {
             return;
@@ -90,56 +97,102 @@ public class PhotonConverter : Photon.MonoBehaviour
             if (converted2 > 0)
             {
                 //This will correct all prefabs: The prefabs have gotten new components, but the correct ID's were lost in this case
-                PhotonViewInspector.VerifyAllSceneViews();
+                PhotonViewHandler.HierarchyChange();    //TODO: most likely this is triggered on change or on save
                 
                 Output("Replaced " + converted2 + " NetworkViews with PhotonViews in scene: " + sceneName);
                 EditorApplication.SaveScene(EditorApplication.currentScene);
             }
             
         }
-
-
-      
-
-
+        
         //Convert C#/JS scripts (API stuff)
-        List<string> scripts = new List<string>();
-        scripts.AddRange(Directory.GetFiles("Assets/", "*.cs", SearchOption.AllDirectories));
-        scripts.AddRange(Directory.GetFiles("Assets/", "*.js", SearchOption.AllDirectories));
-        scripts.AddRange(Directory.GetFiles("Assets/", "*.boo", SearchOption.AllDirectories));
+        List<string> scripts = GetScriptsInFolder("Assets");
+
         EditorUtility.DisplayProgressBar("Converting..", "Scripts..", 0.9f);
         ConvertScripts(scripts);
 
         Output(EditorApplication.timeSinceStartup + " Completed conversion!");
-
         EditorUtility.ClearProgressBar();
+		
+		EditorUtility.DisplayDialog("Completed the conversion", "Don't forget to add \"PhotonNetwork.ConnectWithDefaultSettings();\" to connect to the Photon server before using any multiplayer functionality.", "OK");
     }
 
-    static void ConvertScripts(List<string> scripts)
+    public static void PickFolderAndConvertScripts()
     {
-        foreach (string script in scripts)
+        string folderPath = EditorUtility.OpenFolderPanel("Pick source folder to convert", Directory.GetCurrentDirectory(), "");
+        if (string.IsNullOrEmpty(folderPath))
         {
-            if (script.Contains("PhotonNetwork"))//Don't convert this file (and others)
-                continue;
-            if (script.Contains("Image Effects"))
-                continue;
-
-            string text = File.ReadAllText(script);
-
-            text = ConvertToPhotonAPI(script, text);
-
-            File.WriteAllText(script, text);
+            EditorUtility.DisplayDialog("Script Conversion", "No folder was selected. No files were changed. Please start over.", "Ok.");
+            return;
         }
-        foreach (string script in scripts){
+
+        bool result = EditorUtility.DisplayDialog("Script Conversion", "Scripts in this folder will be modified:\n\n" + folderPath + "\n\nMake sure you have backups of these scripts.\nConversion is not guaranteed to work!", "Backup done. Go!", "Abort");
+        if (!result)
+        {
+            return;
+        }
+
+        List<string> scripts = GetScriptsInFolder(folderPath);
+        ConvertScripts(scripts);
+
+        EditorUtility.DisplayDialog("Script Conversion", "Scripts are now converted to PUN.\n\nYou will need to update\n- scenes\n- components\n- prefabs and\n- add \"PhotonNetwork.ConnectWithDefaultSettings();\"", "Ok");
+    }
+
+
+    public static List<string> GetScriptsInFolder(string folder)
+    {
+        List<string> scripts = new List<string>();
+
+        try
+        {
+            scripts.AddRange(Directory.GetFiles(folder, "*.cs", SearchOption.AllDirectories));
+            scripts.AddRange(Directory.GetFiles(folder, "*.js", SearchOption.AllDirectories));
+            scripts.AddRange(Directory.GetFiles(folder, "*.boo", SearchOption.AllDirectories));
+        }
+        catch (System.Exception ex)
+        {
+            Debug.Log("Getting script list from folder " + folder + " failed. Exception:\n" + ex.ToString());
+        }
+
+        return scripts;
+    }
+
+    static void ConvertScripts(List<string> scriptPathList)
+    {
+        bool ignoreWarningIsLogged = false;
+
+        foreach (string script in scriptPathList)
+        {
+            if (script.Contains("PhotonNetwork")) //Don't convert this file (and others)
+            {
+                if (!ignoreWarningIsLogged)
+                {
+                    ignoreWarningIsLogged = true;
+                    Debug.LogWarning("Conversion to PUN ignores all files with \"PhotonNetwork\" in their file-path.\nCheck: " + script);
+                }
+                continue;
+            }
+            if (script.Contains("Image Effects"))
+            {
+                continue;
+            }
+
+            ConvertToPhotonAPI(script);
+        }
+
+        foreach (string script in scriptPathList)
+        {
             AssetDatabase.ImportAsset(script, ImportAssetOptions.ForceUpdate);
         }
     }
 
-    static string ConvertToPhotonAPI(string file, string input)
+    static void ConvertToPhotonAPI(string file)
     {
+        string text = File.ReadAllText(file);
+
         bool isJS = file.Contains(".js");
-        
-        file =file.Replace("\\", "/"); // Get Class name for JS
+
+        file = file.Replace("\\", "/"); // Get Class name for JS
         string className = file.Substring(file.LastIndexOf("/")+1);
         className = className.Substring(0, className.IndexOf("."));
          
@@ -151,65 +204,65 @@ public class PhotonConverter : Photon.MonoBehaviour
 
         //string VAR_NONARRAY = @"[^A-Za-z0-9_]";
         
-    
-
+        
         //NetworkView
         {
-            input = PregReplace(input, NOT_VAR_WITH_DOT + "NetworkView" + NOT_VAR_WITH_DOT, "$1PhotonView$2");
-            input = PregReplace(input, NOT_VAR_WITH_DOT + "networkView" + NOT_VAR_WITH_DOT, "$1photonView$2");
-            input = PregReplace(input, NOT_VAR_WITH_DOT + "stateSynchronization" + NOT_VAR_WITH_DOT, "$1synchronization$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "NetworkView" + NOT_VAR_WITH_DOT, "$1PhotonView$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "networkView" + NOT_VAR_WITH_DOT, "$1photonView$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "stateSynchronization" + NOT_VAR_WITH_DOT, "$1synchronization$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "NetworkStateSynchronization" + NOT_VAR_WITH_DOT, "$1ViewSynchronization$2");   // map Unity enum to ours
             //.RPC
-            input = PregReplace(input, NOT_VAR_WITH_DOT + "RPCMode.Server" + NOT_VAR_WITH_DOT, "$1PhotonTargets.MasterClient$2");
-            input = PregReplace(input, NOT_VAR_WITH_DOT + "RPCMode" + NOT_VAR_WITH_DOT, "$1PhotonTargets$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "RPCMode.Server" + NOT_VAR_WITH_DOT, "$1PhotonTargets.MasterClient$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "RPCMode" + NOT_VAR_WITH_DOT, "$1PhotonTargets$2");
         }
 
         //NetworkMessageInfo: 100%
         {
-            input = PregReplace(input, NOT_VAR_WITH_DOT + "NetworkMessageInfo" + NOT_VAR_WITH_DOT, "$1PhotonMessageInfo$2");
-            input = PregReplace(input, NOT_VAR_WITH_DOT + "networkView" + NOT_VAR_WITH_DOT, "$1photonView$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "NetworkMessageInfo" + NOT_VAR_WITH_DOT, "$1PhotonMessageInfo$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "networkView" + NOT_VAR_WITH_DOT, "$1photonView$2");
         }
 
         //NetworkViewID:
         {
-            input = PregReplace(input, NOT_VAR_WITH_DOT + "NetworkViewID" + NOT_VAR_WITH_DOT, "$1PhotonViewID$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "NetworkViewID" + NOT_VAR_WITH_DOT, "$1int$2"); //We simply use an int
         }
 
         //NetworkPlayer
         {
-            input = PregReplace(input, NOT_VAR_WITH_DOT + "NetworkPlayer" + NOT_VAR_WITH_DOT, "$1PhotonPlayer$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "NetworkPlayer" + NOT_VAR_WITH_DOT, "$1PhotonPlayer$2");
         }
 
         //Network
         {
             //Monobehaviour callbacks
             {
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "OnPlayerConnected" + NOT_VAR_WITH_DOT, "$1OnPhotonPlayerConnected$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "OnPlayerDisconnected" + NOT_VAR_WITH_DOT, "$1OnPhotonPlayerDisconnected$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "OnNetworkInstantiate" + NOT_VAR_WITH_DOT, "$1OnPhotonInstantiate$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "OnSerializeNetworkView" + NOT_VAR_WITH_DOT, "$1OnPhotonSerializeView$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "BitStream" + NOT_VAR_WITH_DOT, "$1PhotonStream$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "OnPlayerConnected" + NOT_VAR_WITH_DOT, "$1OnPhotonPlayerConnected$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "OnPlayerDisconnected" + NOT_VAR_WITH_DOT, "$1OnPhotonPlayerDisconnected$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "OnNetworkInstantiate" + NOT_VAR_WITH_DOT, "$1OnPhotonInstantiate$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "OnSerializeNetworkView" + NOT_VAR_WITH_DOT, "$1OnPhotonSerializeView$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "BitStream" + NOT_VAR_WITH_DOT, "$1PhotonStream$2");
 
                 //Not completely the same meaning
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "OnServerInitialized" + NOT_VAR_WITH_DOT, "$1OnCreatedRoom$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "OnConnectedToServer" + NOT_VAR_WITH_DOT, "$1OnJoinedRoom$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "OnServerInitialized" + NOT_VAR_WITH_DOT, "$1OnCreatedRoom$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "OnConnectedToServer" + NOT_VAR_WITH_DOT, "$1OnJoinedRoom$2");
 
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "OnFailedToConnectToMasterServer" + NOT_VAR_WITH_DOT, "$1OnFailedToConnectToPhoton$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "OnFailedToConnect" + NOT_VAR_WITH_DOT, "$1OnFailedToConnect_OBSELETE$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "OnFailedToConnectToMasterServer" + NOT_VAR_WITH_DOT, "$1OnFailedToConnectToPhoton$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "OnFailedToConnect" + NOT_VAR_WITH_DOT, "$1OnFailedToConnect_OBSELETE$2");
             }
 
             //Variables
             {
 
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "Network.connections" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.playerList$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "Network.isServer" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.isMasterClient$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "Network.isClient" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.isNonMasterClientInRoom$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "Network.connections" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.playerList$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "Network.isServer" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.isMasterClient$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "Network.isClient" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.isNonMasterClientInRoom$2");
 
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "NetworkPeerType" + NOT_VAR_WITH_DOT, "$1ConnectionState$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "Network.peerType" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.connectionState$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "ConnectionState.Server" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.isMasterClient$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "ConnectionState.Client" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.isNonMasterClientInRoom$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "PhotonNetwork.playerList.Length" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.playerList.Count$2");
-                
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "NetworkPeerType" + NOT_VAR_WITH_DOT, "$1ConnectionState$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "Network.peerType" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.connectionState$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "ConnectionState.Server" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.isMasterClient$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "ConnectionState.Client" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.isNonMasterClientInRoom$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "PhotonNetwork.playerList.Length" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.playerList.Count$2");
+
                 /*DROPPED:
                     minimumAllocatableViewIDs 
 	                natFacilitatorIP is dropped
@@ -225,10 +278,10 @@ public class PhotonConverter : Photon.MonoBehaviour
 
             //Methods
             {
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "Network.InitializeServer" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.JoinRoom$2");//Either Join or Create room
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "Network.Connect" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.JoinRoom$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "Network.GetAveragePing" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.GetPing$2");
-                input = PregReplace(input, NOT_VAR_WITH_DOT + "Network.GetLastPing" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.GetPing$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "Network.InitializeServer" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.CreateRoom$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "Network.Connect" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.JoinRoom$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "Network.GetAveragePing" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.GetPing$2");
+                text = PregReplace(text, NOT_VAR_WITH_DOT + "Network.GetLastPing" + NOT_VAR_WITH_DOT, "$1PhotonNetwork.GetPing$2");
                 /*DROPPED:
                     TestConnection
                     TestConnectionNAT
@@ -237,27 +290,34 @@ public class PhotonConverter : Photon.MonoBehaviour
             }
 
             //Overall
-            input = PregReplace(input, NOT_VAR_WITH_DOT + "Network" + NOT_VAR_WITH_DOT, "$1PhotonNetwork$2");
+            text = PregReplace(text, NOT_VAR_WITH_DOT + "Network" + NOT_VAR_WITH_DOT, "$1PhotonNetwork$2");
+			
+		
+		//Changed methods
+			 string ignoreMe = @"([A-Za-z0-9_\[\]\(\) ]+)";
+
+		 text = PregReplace(text, NOT_VAR_WITH_DOT + "PhotonNetwork.GetPing\\(" + ignoreMe+"\\);", "$1PhotonNetwork.GetPing();");
+		text = PregReplace(text, NOT_VAR_WITH_DOT + "PhotonNetwork.CloseConnection\\(" + ignoreMe+","+ignoreMe+"\\);", "$1PhotonNetwork.CloseConnection($2);");
+			
         }
 
         //General
         {
-            if (input.Contains("Photon")) //Only use the PhotonMonoBehaviour if we use photonView and friends.
+            if (text.Contains("Photon")) //Only use the PhotonMonoBehaviour if we use photonView and friends.
             {
                 if (isJS)//JS
                 {
-                    if (input.Contains("extends MonoBehaviour"))
-                        input = PregReplace(input, "extends MonoBehaviour", "extends Photon.MonoBehaviour");
+                    if (text.Contains("extends MonoBehaviour"))
+                        text = PregReplace(text, "extends MonoBehaviour", "extends Photon.MonoBehaviour");
                     else
-                        input = "class " + className + " extends Photon.MonoBehaviour {\n" + input + "\n}";
+                        text = "class " + className + " extends Photon.MonoBehaviour {\n" + text + "\n}";
                 }
                 else //C#
-                    input = PregReplace(input, ": MonoBehaviour", ": Photon.MonoBehaviour");
+                    text = PregReplace(text, ": MonoBehaviour", ": Photon.MonoBehaviour");
             }
         }
 
-
-        return input;
+        File.WriteAllText(file, text);
     }
 
     static string PregReplace(string input, string[] pattern, string[] replacements)
@@ -302,8 +362,7 @@ public class PhotonConverter : Photon.MonoBehaviour
                 str = str.Substring(0, firstSpace);
                 int oldViewID = int.Parse(str);
 
-                view.viewID = new PhotonViewID(oldViewID, null);
-                view.SetSceneID(oldViewID);
+                view.viewID = oldViewID;
                 EditorUtility.SetDirty(view);
                 EditorUtility.SetDirty(view.gameObject);
             }
@@ -328,11 +387,11 @@ public class PhotonConverter : Photon.MonoBehaviour
         return netViews.Length;
     }
 
-
     static void Output(string str)
     {
         Debug.Log(((int)EditorApplication.timeSinceStartup) + " " + str);
     }
+
     static void ConversionError(string file, string str)
     {
         Debug.LogError("Scrip conversion[" + file + "]: " + str);
