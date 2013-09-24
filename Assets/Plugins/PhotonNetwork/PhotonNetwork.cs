@@ -271,6 +271,19 @@ public static class PhotonNetwork
             networkingPeer.PlayerName = value;
         }
     }
+    
+    public static string playerRoarID
+    {
+    	get
+    	{
+    		return networkingPeer.PlayerRoarID;
+    	}
+    	
+    	set
+    	{
+    		networkingPeer.PlayerRoarID = value;
+    	}
+    }
 
     /// <summary>
     /// The full PhotonPlayer list, including the local player.
