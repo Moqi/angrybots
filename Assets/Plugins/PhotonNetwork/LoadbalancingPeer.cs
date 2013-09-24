@@ -13,6 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ExitGames.Client.Photon;
 using ExitGames.Client.Photon.Lite;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 /// <summary>
 /// Internally used by PUN, a LoadbalancingPeer provides the operations and enum 

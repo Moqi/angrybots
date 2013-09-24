@@ -10,6 +10,8 @@ using System.IO;
 
 using ExitGames.Client.Photon;
 using UnityEngine;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
+
 
 /// <summary>
 /// The main class to use the PhotonNetwork plugin.

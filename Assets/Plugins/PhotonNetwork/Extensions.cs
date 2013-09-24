@@ -10,6 +10,7 @@
 using System.Collections;
 using ExitGames.Client.Photon;
 using UnityEngine;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 /// <summary>
 /// This static class defines some useful extension methods for several existing classes (e.g. Vector3, float and others).

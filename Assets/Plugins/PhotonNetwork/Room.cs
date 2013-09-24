@@ -10,6 +10,7 @@
 using System;
 using System.Collections;
 using ExitGames.Client.Photon;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 /// <summary>
 /// This class resembles a room that PUN joins (or joined).

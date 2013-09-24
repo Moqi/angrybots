@@ -10,6 +10,7 @@ using System.Reflection;
 using ExitGames.Client.Photon;
 using ExitGames.Client.Photon.Lite;
 using UnityEngine;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 /// <summary>
 /// Implements Photon LoadBalancing used in PUN.
